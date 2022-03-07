@@ -1,0 +1,1 @@
+http://mirrors.ustc.edu.cn/armbian/pool/main/a/armbian-firmware-full/
