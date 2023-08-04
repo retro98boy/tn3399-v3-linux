@@ -1,0 +1,64 @@
+/dts-v1/;
+#include "rk3399-tn3399-v3.dts"
+
+/ {
+	backlight: backlight {
+		status = "okay";
+		compatible = "pwm-backlight";
+		pwms = <&pwm0 0 25000 0>;
+		brightness-levels = <0 4 8 16 32 64 128 255>;
+		default-brightness-level = <7>;
+	};
+
+	vcc_panel: vcc-panel {
+		compatible = "regulator-fixed";
+		enable-active-high;
+		gpio = <&gpio1 RK_PA4 GPIO_ACTIVE_HIGH>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&vcc_panel_en>;
+		regulator-name = "vcc_panel";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		vin-supply = <&vcc3v3_sys>;
+	};
+};
+
+&mipi_dsi {
+	status = "okay";
+	clock-master;
+
+	ports {
+		mipi_out: port@1 {
+			#address-cells = <0>;
+			#size-cells = <0>;
+			reg = <1>;
+
+			dsi_out: endpoint {
+				remote-endpoint = <&tc358775_in>;
+			};
+		};
+	};
+
+	panel@0 {
+		reg = <0>;
+		compatible = "toshiba,tc358775-panel";
+		backlight = <&backlight>;
+		rotation = <0>;
+
+		panel-supply = <&vcc_panel>;
+
+		port {
+			tc358775_in: endpoint {
+				remote-endpoint = <&dsi_out>;
+			};
+		};
+	};
+};
+
+&pinctrl {
+	panel {
+		vcc_panel_en: vcc-panel-en {
+			rockchip,pins = <1 RK_PA4 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+	};
+};

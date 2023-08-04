@@ -2,7 +2,11 @@
 
 板子上的LVDS接口是rk3399的DSI0通过TC358775转换而来，LVDS信号位于板子右边的2x15pin，pin间距为2.0mm
 
-上面的PWM0一般用于屏幕背光调节
+上面的6pin用于屏幕PWM背光调节，有的板子背光不可调节或者自带调节旋钮等就用不到此接口，但是本文还是在设备树中定义了这个基于PWM0的Backlight，如果屏幕可用，可以在用户层通过sysfs控制背光亮度
+
+背光不是屏幕的一部分，没有背光不影响屏幕显示内容，只是人眼看不清楚，说夸张点拿个手电筒在屏幕后面照过去，人眼就能看到了，所以屏幕模组里面都有灯条/灯珠。以上理论不适用于OLED？
+
+不同的屏幕调节办法不同，有的屏幕提供PWM输入线来调节亮度，这种就可以用到TN3399_V3的背光接口，内核中注册pwm-backlight后，就可以系统中控制屏幕亮度（实际上是PWM占空比）。有的屏幕一上电就打开屏幕背光且不可调，还有的屏幕自带旋钮来调节亮度，它们都不能被TN3399_V3的软件控制
 
 ![接口预览](pictures/lvds-overview.jpg)
 
@@ -20,9 +24,9 @@ TC358775可通过配置输出单/双通道的6/8bit LVDS信号，最大分辨率
 
 ![连接图片](pictures/lvds-connect.jpg)
 
-该屏幕的背光不可控，默认打开，所以上面的PWM0用不上
+该屏幕的背光不可控，默认打开，所以上面的PWM背光调节接口用不上
 
-LVDS屏幕的供电电压选择在TN3399_V3的背面设置
+LVDS屏幕的供电电压（屏幕本身的工作电压，即2x15pin中的pin 1 2 3，见上图，如果你的屏幕背光还需要额外供电，注意不要搞混）选择在TN3399_V3的背面设置
 
 ![电压选择](pictures/resistance1.jpg)
 
@@ -64,7 +68,7 @@ TC358775的LVDS输出时钟可以选择接外部晶振，或者从输入的DSI�
 
 ## 添加进内核
 
-下载内核源码，打上`linux6.4.3-add-tn3399-v3-with-1024x600-panel-support.patch`补丁，编译时选项勾选上
+下载内核源码，打上`linux6.4.7-add-tn3399-v3-with-1024x600-panel-support.patch`补丁，编译时选项勾选上
 
 Device Drivers -> Graphics support -> Display Panels -> TOSHIBA TC358775 panel driver
 
@@ -86,7 +90,7 @@ Device Drivers -> Graphics support -> Display Panels -> TOSHIBA TC358775 panel d
 sudo pacman -S linux-headers gcc make
 ```
 
-将仓库中的lvds-out-of-tree-mod目录上传到Manjaro-ARM中，修改Makefile中的BUILD_DIR为对应的内核source位置，执行
+将仓库中的panel-toshiba-tc358775-1.0.0目录上传到Manjaro-ARM中，执行
 
 ```
 make -j6
@@ -98,7 +102,20 @@ sudo mkinitcpio -p linux
 
 最后重启即可自动加载驱动模块，也可以执行sudo modprobe panel-toshiba-tc358775来加载
 
-如果内核版本有更新，需要重新make内核模块并安装。使用dkms管理该内核模块，内核版本在更新时会自动编译并安装，一劳永逸
+上面的操作如果内核有变动，需要重新make内核模块并安装，故推荐使用DKMS自动管理模块，如下
+
+将panel-toshiba-tc358775-1.0.0放到/usr/src下，执行
+
+```
+# 安装工具
+sudo pacman -S dkms linux-headers gcc make
+# 将模块纳入DKMS管理，每当内核有变动时，会自动编译安装
+sudo dkms add -m panel-toshiba-tc358775 -v 1.0.0
+# 不想等内核变动，立刻安装
+sudo dkms install -m panel-toshiba-tc358775 -v 1.0.0
+```
+
+编辑/etc/mkinitcpio.conf，在MODULES中添加一项panel-toshiba-tc358775，例如`MODULES=(rtc_rk808 rockchipdrm panel-toshiba-tc358775)`，这样每次再更新initramfs时会自动将该模块包含进去，确保在内核启动早期就加载
 
 # 为其他屏幕适配驱动
 
@@ -116,7 +133,7 @@ sudo mkinitcpio -p linux
 
 PS：这里的clock即pixel clock，等于h_total * v_total * fps = (1024 + 156 + 8 + 156) * (600 + 16 + 6 + 16) * 60 = 51448320 pixel/s，也就是说1s要传输这么多的像素点
 
-代码里的clock单位为k pixel/s，所以要除去1000，再取个整，就是51450。由于取了整，拿51450 * 1000再除以1帧的像素点个数，等于60.xxxx帧，这就是在某些地方看到小数帧的由来
+代码里的clock单位为k pixel/s，所以要除去1000，再取个整，就是51450。由于取了整，拿51450 * 1000再除以1帧的像素点个数，等于60.xxxx帧，这就是在某些地方看到小数帧率的由来
 
 ![屏幕时序](pictures/panel-timing.png)
 
@@ -182,9 +199,9 @@ PS：这里的clock即pixel clock，等于h_total * v_total * fps = (1024 + 156 
 
 # 调试过程中可能遇到的问题
 
-- 修改驱动文件并make && sudo make install（Debian系列是update-initramfs命令）后，重新开机修改未生效
+- 修改驱动文件并make && sudo make install后，重新开机修改未生效
 
-执行`sudo mkinitcpio -p linux`将新的驱动模块更新到initramfs中，每次开机使用的都是initramfs中的驱动模块，不会使用rootfs中的
+执行`sudo mkinitcpio -p linux`（Debian系是update-initramfs命令）将新的驱动模块更新到initramfs中，每次开机使用的都是initramfs中的驱动模块，不会使用rootfs中的
 
 - 显示内容超出实际屏幕或者屏幕有黑边
 
