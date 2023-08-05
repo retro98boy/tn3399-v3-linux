@@ -54,7 +54,7 @@ sudo partprobe /dev/loop0
 # 挂载分区到临时目录
 sudo mount /dev/loop0p2 /mnt && sudo mount /dev/loop0p1 /mnt/boot
 # chroot到临时目录，主机需要安装systemd-container qemu-user-static binfmt
-sudo systemd-nspawn -D /mnt -M tmp
+sudo systemd-nspawn -D /mnt -M tmp bash
 # 对rootfs做些自定义，例如换源，添加预装软件等
 # 退出systemd-nspawn，方式是按住 Ctrl，接着连按]三次
 # 卸载分区
@@ -90,3 +90,68 @@ sudo cfdisk ~/myimg.img
 # WIFI
 
 内核需要搭配固件才能驱动AP6255，主线内核和BSP内核所使用的固件不同，但都应该将其放置到rootfs的/lib/firmware/brcm下
+
+# 扬声器
+
+板子原理图设计支持HDMI、Headphone、Speaker输出和Microphone输入，但是Headphone和Microphone的元器件全部NC，所以目前只支持HDMI和Speaker音频输出
+
+Speaker输出由ALC5640 Codec加NS4258功放提供，将板子散热片朝上、网口朝前放置，Speaker的输出4pin接口在板子左边缘，旁边有SPK字样，信号从上往下分别是LN、LP、RN、RP，将其接上两个喇叭
+
+进入Linux系统后，执行aplay -l查看发现两个Playback设备，card0是ALC5640，card1是HDMI：
+
+```
+**** List of PLAYBACK Hardware Devices ****
+card 0: rockchiprt5640c [rockchip,rt5640-codec], device 0: ff890000.i2s-rt5640-aif1 rt5640-aif1-0 [ff890000.i2s-rt5640-aif1 rt5640-aif1-0]
+  Subdevices: 1/1
+  Subdevice #0: subdevice #0
+card 1: hdmisound [hdmi-sound], device 0: ff8a0000.i2s-i2s-hifi i2s-hifi-0 [ff8a0000.i2s-i2s-hifi i2s-hifi-0]
+  Subdevices: 1/1
+  Subdevice #0: subdevice #0
+```
+
+使用Speaker播放先要打开ALC5640的对应的通路：
+
+```
+# Speaker通路
+amixer -D hw:rockchiprt5640c cset name="Stereo DAC MIXL DAC L1 Switch" "1"
+amixer -D hw:rockchiprt5640c cset name="Stereo DAC MIXR DAC R1 Switch" "1"
+amixer -D hw:rockchiprt5640c cset name="Speaker L Playback Switch" "1"
+amixer -D hw:rockchiprt5640c cset name="Speaker R Playback Switch" "1"
+amixer -D hw:rockchiprt5640c cset name="SPOL MIX SPKVOL L Switch" "1"
+amixer -D hw:rockchiprt5640c cset name="SPOR MIX SPKVOL R Switch" "1"
+amixer -D hw:rockchiprt5640c cset name="SPOL MIX DAC L1 Switch" "1"
+amixer -D hw:rockchiprt5640c cset name="SPOR MIX DAC R1 Switch" "1"
+amixer -D hw:rockchiprt5640c cset name="Speaker Playback Volume" "0x20"
+```
+
+使用mplayer播放mp3来测试（如果安装了桌面环境，请不要指定alsa后端，因为声卡可能已经被pipewire、pulseaudio等占用）
+
+```
+mplayer -ao alsa:device=hw=rockchiprt5640c.0 test.mp3
+```
+
+其他通路配置：
+
+```
+# Headphone通路
+amixer -D hw:rockchiprt5640c cset name="Stereo DAC MIXL DAC L1 Switch" "1"
+amixer -D hw:rockchiprt5640c cset name="Stereo DAC MIXR DAC R1 Switch" "1"
+amixer -D hw:rockchiprt5640c cset name="HPO MIX HPVOL Switch" "1"
+amixer -D hw:rockchiprt5640c cset name="HP L Playback Switch" "1"
+amixer -D hw:rockchiprt5640c cset name="HP R Playback Switch" "1"
+amixer -D hw:rockchiprt5640c cset name="HPO MIX DAC1 Switch" "1"
+amixer -D hw:rockchiprt5640c cset name="HP Playback Volume" "0x20"
+# Microphone通路
+amixer -D hw:rockchiprt5640c cset name="ADC Capture Switch" "1"
+amixer -D hw:rockchiprt5640c cset name="ADC IF1 Data Switch" "1"
+amixer -D hw:rockchiprt5640c cset name="RECMIXL BST1 Switch" "1"
+amixer -D hw:rockchiprt5640c cset name="RECMIXR BST1 Switch" "1"
+amixer -D hw:rockchiprt5640c cset name="Stereo ADC MIXL ADC1 Switch" "1"
+amixer -D hw:rockchiprt5640c cset name="Stereo ADC MIXR ADC1 Switch" "1"
+```
+
+参考：
+
+[The audio ALC5640 can’t work on I2S0 and I2C2 for Xaiver NX](https://forums.developer.nvidia.com/t/the-audio-alc5640-cant-work-on-i2s0-and-i2c2-for-xaiver-nx/179617)
+
+[Advanced Linux Sound Architecture](https://wiki.archlinux.org/title/Advanced_Linux_Sound_Architecture)

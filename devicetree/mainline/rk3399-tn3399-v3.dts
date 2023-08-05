@@ -36,6 +36,35 @@
 		};
 	};
 
+	rt5640-sound {
+		compatible = "simple-audio-card";
+		simple-audio-card,name = "rockchip,rt5640-codec";
+		simple-audio-card,format = "i2s";
+		simple-audio-card,mclk-fs = <256>;
+		simple-audio-card,widgets =
+			"Microphone", "Mic Jack",
+			"Headphone", "Headphone Jack",
+			"Speaker", "Speaker Jack";
+		simple-audio-card,routing =
+			"Mic Jack", "MICBIAS1",
+			"IN1P", "Mic Jack",
+			"IN1N", "Mic Jack",
+			"Headphone Jack", "HPOL",
+			"Headphone Jack", "HPOR",
+			"Speaker Jack", "SPOLP",
+			"Speaker Jack", "SPOLN",
+			"Speaker Jack", "SPORP",
+			"Speaker Jack", "SPORN";
+
+		simple-audio-card,cpu {
+			sound-dai = <&i2s1>;
+		};
+
+		simple-audio-card,codec {
+			sound-dai = <&rt5640>;
+		};
+	};
+
 	sdio_pwrseq: sdio-pwrseq {
 		compatible = "mmc-pwrseq-simple";
 		clocks = <&rk808 1>;
@@ -438,6 +467,17 @@
 	i2c-scl-rising-time-ns = <300>;
 	i2c-scl-falling-time-ns = <15>;
 	status = "okay";
+
+	rt5640: rt5640@1c {
+		compatible = "realtek,rt5640";
+		reg = <0x1c>;
+		clocks = <&cru SCLK_I2S_8CH_OUT>;
+		clock-names = "mclk";
+		realtek,in1-differential;
+		#sound-dai-cells = <0>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&ear_ctrl_pin>, <&ns4258_en>;
+	};
 };
 
 &i2c2 {
@@ -458,13 +498,15 @@
 	status = "okay";
 };
 
-// NC
 &i2s0 {
+	rockchip,playback-channels = <8>;
+	rockchip,capture-channels = <8>;
 	status = "okay";
 };
 
-// CODEC
 &i2s1 {
+	rockchip,playback-channels = <2>;
+	rockchip,capture-channels = <2>;
 	status = "okay";
 };
 
@@ -526,6 +568,16 @@
 			rockchip,pins = <0 RK_PA1 RK_FUNC_GPIO &pcfg_pull_none>;
 		};
 
+	};
+
+	rt5640 {
+		ear_ctrl_pin: ear-ctrl-pin {
+			rockchip,pins = <4 RK_PC5 RK_FUNC_GPIO &pcfg_output_high>;
+		};
+
+		ns4258_en: ns4258-en {
+			rockchip,pins = <4 RK_PD2 RK_FUNC_GPIO &pcfg_output_high>;
+		};
 	};
 
 	sdio-pwrseq {
