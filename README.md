@@ -97,7 +97,7 @@ sudo cfdisk ~/myimg.img
 
 Speaker输出由ALC5640 Codec加NS4258功放提供，将板子散热片朝上、网口朝前放置，Speaker的输出4pin接口在板子左边缘，旁边有SPK字样，信号从上往下分别是LN、LP、RN、RP，将其接上两个喇叭
 
-进入Linux系统后，执行aplay -l查看发现两个Playback设备，card0是ALC5640，card1是HDMI：
+进入Linux系统后，执行aplay -l发现两个Playback设备，card0是ALC5640，card1是HDMI（序号不固定）：
 
 ```
 **** List of PLAYBACK Hardware Devices ****
@@ -112,42 +112,40 @@ card 1: hdmisound [hdmi-sound], device 0: ff8a0000.i2s-i2s-hifi i2s-hifi-0 [ff8a
 使用Speaker播放先要打开ALC5640的对应的通路：
 
 ```
-# Speaker通路
-amixer -D hw:rockchiprt5640c cset name="Stereo DAC MIXL DAC L1 Switch" "1"
-amixer -D hw:rockchiprt5640c cset name="Stereo DAC MIXR DAC R1 Switch" "1"
-amixer -D hw:rockchiprt5640c cset name="Speaker L Playback Switch" "1"
-amixer -D hw:rockchiprt5640c cset name="Speaker R Playback Switch" "1"
-amixer -D hw:rockchiprt5640c cset name="SPOL MIX SPKVOL L Switch" "1"
-amixer -D hw:rockchiprt5640c cset name="SPOR MIX SPKVOL R Switch" "1"
-amixer -D hw:rockchiprt5640c cset name="SPOL MIX DAC L1 Switch" "1"
-amixer -D hw:rockchiprt5640c cset name="SPOR MIX DAC R1 Switch" "1"
-amixer -D hw:rockchiprt5640c cset name="Speaker Playback Volume" "0x20"
+# Speaker
+amixer -D hw:rockchiprt5640c cset name='Stereo DAC MIXL DAC L1 Switch' on
+amixer -D hw:rockchiprt5640c cset name='Stereo DAC MIXR DAC R1 Switch' on
+amixer -D hw:rockchiprt5640c cset name='SPOL MIX DAC L1 Switch' on
+amixer -D hw:rockchiprt5640c cset name='SPOR MIX DAC R1 Switch' on
+amixer -D hw:rockchiprt5640c cset name='Speaker L Playback Switch' on
+amixer -D hw:rockchiprt5640c cset name='Speaker R Playback Switch' on
+# 音量 0 - 39
+amixer -D hw:rockchiprt5640c cset name='Speaker Playback Volume' 39
 ```
 
 使用mplayer播放mp3来测试（如果安装了桌面环境，请不要指定alsa后端，因为声卡可能已经被pipewire、pulseaudio等占用）
 
 ```
-mplayer -ao alsa:device=hw=rockchiprt5640c.0 test.mp3
+mplayer -ao alsa:device=hw=rockchiprt5640c,0 test.mp3
 ```
 
 其他通路配置：
 
 ```
-# Headphone通路
-amixer -D hw:rockchiprt5640c cset name="Stereo DAC MIXL DAC L1 Switch" "1"
-amixer -D hw:rockchiprt5640c cset name="Stereo DAC MIXR DAC R1 Switch" "1"
-amixer -D hw:rockchiprt5640c cset name="HPO MIX HPVOL Switch" "1"
-amixer -D hw:rockchiprt5640c cset name="HP L Playback Switch" "1"
-amixer -D hw:rockchiprt5640c cset name="HP R Playback Switch" "1"
-amixer -D hw:rockchiprt5640c cset name="HPO MIX DAC1 Switch" "1"
-amixer -D hw:rockchiprt5640c cset name="HP Playback Volume" "0x20"
-# Microphone通路
-amixer -D hw:rockchiprt5640c cset name="ADC Capture Switch" "1"
-amixer -D hw:rockchiprt5640c cset name="ADC IF1 Data Switch" "1"
-amixer -D hw:rockchiprt5640c cset name="RECMIXL BST1 Switch" "1"
-amixer -D hw:rockchiprt5640c cset name="RECMIXR BST1 Switch" "1"
-amixer -D hw:rockchiprt5640c cset name="Stereo ADC MIXL ADC1 Switch" "1"
-amixer -D hw:rockchiprt5640c cset name="Stereo ADC MIXR ADC1 Switch" "1"
+# Headphone
+amixer -D hw:rockchiprt5640c cset name='Stereo DAC MIXL DAC L1 Switch' on
+amixer -D hw:rockchiprt5640c cset name='Stereo DAC MIXR DAC R1 Switch' on
+amixer -D hw:rockchiprt5640c cset name='HPO MIX DAC1 Switch' on
+amixer -D hw:rockchiprt5640c cset name='HP L Playback Switch' on
+amixer -D hw:rockchiprt5640c cset name='HP R Playback Switch' on
+# 音量 0 - 39
+amixer -D hw:rockchiprt5640c cset name='HP Playback Volume' 39
+
+# Microphone_IN1
+amixer -D hw:rockchiprt5640c cset name='RECMIXL BST1 Switch' on
+amixer -D hw:rockchiprt5640c cset name='RECMIXR BST1 Switch' on
+amixer -D hw:rockchiprt5640c cset name='Stereo ADC MIXL ADC1 Switch' on
+amixer -D hw:rockchiprt5640c cset name='Stereo ADC MIXR ADC1 Switch' on
 ```
 
 参考：
