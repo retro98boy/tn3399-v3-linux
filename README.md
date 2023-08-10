@@ -2,7 +2,7 @@
 
 参考[lanseyujie](https://github.com/lanseyujie/tn3399_v3)的教程
 
-首先编译[ATF](https://github.com/ARM-software/arm-trusted-firmware/tags)
+## 编译[ATF](https://github.com/ARM-software/arm-trusted-firmware/tags)
 
 下载源码并解压，cd进入
 
@@ -10,7 +10,7 @@
 
 编译完成后设置环境变量：export BL31=path_to_your_bl31.elf
 
-接着编译U-Boot
+## 编译[U-Boot](https://github.com/u-boot/u-boot/tags)
 
 下载主线U-Boot源码，解压并打上项目中提供的patch
 
@@ -18,7 +18,7 @@
 
 源码目录下的u-boot-rockchip.bin就是所需镜像
 
-将其烧录到img镜像或者TF卡的32k偏移处即可引导系统。**注意使用dd烧录到img镜像时，要加上conv=notrunc选项**
+使用dd将其烧录到img镜像或者TF卡的32k偏移处即可，**注意到img镜像时，要加上conv=notrunc选项**
 
 # 编译内核
 
@@ -32,7 +32,7 @@ BSP内核推荐[mrfixit2001](https://github.com/mrfixit2001/rockchip-kernel)维�
 
 ## 对相同SoC的系统镜像进行移植
 
-举例：
+举例
 
 下载rockpro64的[Manjaro-ARM](https://github.com/manjaro-arm/rockpro64-images)系统镜像，使用losetup挂载img到临时目录
 
@@ -95,7 +95,7 @@ sudo cfdisk ~/myimg.img
 
 板子原理图设计支持HDMI、Headphone、Speaker输出和Microphone输入，但是Headphone和Microphone的元器件全部NC，所以目前只支持HDMI和Speaker音频输出
 
-Speaker输出由ALC5640 Codec加NS4258功放提供，将板子散热片朝上、网口朝前放置，Speaker的输出4pin接口在板子左边缘，旁边有SPK字样，信号从上往下分别是LN、LP、RN、RP，将其接上两个喇叭
+Speaker输出由ALC5640 Codec加NS4258 PA提供，将板子散热片朝上、网口朝前放置，Speaker的输出4pin接口在板子左边缘，旁边有SPK字样，信号从上往下分别是LN、LP、RN、RP，将其接上两个喇叭
 
 进入Linux系统后，执行aplay -l发现两个Playback设备，card0是ALC5640，card1是HDMI（序号不固定）：
 
@@ -109,7 +109,17 @@ card 1: hdmisound [hdmi-sound], device 0: ff8a0000.i2s-i2s-hifi i2s-hifi-0 [ff8a
   Subdevice #0: subdevice #0
 ```
 
-使用Speaker播放先要打开ALC5640的对应的通路：
+使用mplayer播放mp3来测试扬声器：
+
+```
+mplayer -ao alsa:device=hw=rockchiprt5640c,0 test.mp3
+```
+
+如果无声音，说明ALC5640内部的音频路由错误，下面有两种方法配置音频路由
+
+## 命令手动配置
+
+配置Speaker的通路即可，Headphone和Microphone由于元器件NC，配置了也没用：
 
 ```
 # Speaker
@@ -120,18 +130,8 @@ amixer -D hw:rockchiprt5640c cset name='SPOR MIX DAC R1 Switch' on
 amixer -D hw:rockchiprt5640c cset name='Speaker L Playback Switch' on
 amixer -D hw:rockchiprt5640c cset name='Speaker R Playback Switch' on
 # 音量 0 - 39
-amixer -D hw:rockchiprt5640c cset name='Speaker Playback Volume' 39
-```
+# amixer -D hw:rockchiprt5640c cset name='Speaker Playback Volume' 39
 
-使用mplayer播放mp3来测试（如果安装了桌面环境，请不要指定alsa后端，因为声卡可能已经被pipewire、pulseaudio等占用）
-
-```
-mplayer -ao alsa:device=hw=rockchiprt5640c,0 test.mp3
-```
-
-其他通路配置：
-
-```
 # Headphone
 amixer -D hw:rockchiprt5640c cset name='Stereo DAC MIXL DAC L1 Switch' on
 amixer -D hw:rockchiprt5640c cset name='Stereo DAC MIXR DAC R1 Switch' on
@@ -139,7 +139,7 @@ amixer -D hw:rockchiprt5640c cset name='HPO MIX DAC1 Switch' on
 amixer -D hw:rockchiprt5640c cset name='HP L Playback Switch' on
 amixer -D hw:rockchiprt5640c cset name='HP R Playback Switch' on
 # 音量 0 - 39
-amixer -D hw:rockchiprt5640c cset name='HP Playback Volume' 39
+# amixer -D hw:rockchiprt5640c cset name='HP Playback Volume' 39
 
 # Microphone_IN1
 amixer -D hw:rockchiprt5640c cset name='RECMIXL BST1 Switch' on
@@ -148,8 +148,33 @@ amixer -D hw:rockchiprt5640c cset name='Stereo ADC MIXL ADC1 Switch' on
 amixer -D hw:rockchiprt5640c cset name='Stereo ADC MIXR ADC1 Switch' on
 ```
 
+## UCM自动配置（推荐）
+
+将`rockchip,rt5640-codec.conf`和`rockchip,rt5640-codec-HiFi.conf`移动到板子系统的`/usr/share/alsa/ucm2/conf.d/simple-card`中重启即可
+
+conf文件在仓库的sound目录下
+
+如果系统不存在`/usr/share/alsa/ucm2/conf.d/simple-card`可以安装alsa-ucm-conf：
+
+```
+# Manjaro-ARM
+sudo pacman -S alsa-ucm-conf
+# Armbian
+sudo apt install alsa-ucm-conf
+```
+
+PS：ALC5640的控制选项较多，如果自己使用amxier/alsamixer折腾后发现音频路由混乱而无法正常使用，可通过下面的方法恢复：
+
+```
+# 配置会被保存到asound.state，删除后重启即可
+# 删除前停止自动保存的service
+sudo systemctl stop alsa-restore.service && sudo rm /var/lib/alsa/asound.state && sudo reboot
+```
+
 参考：
 
 [The audio ALC5640 can’t work on I2S0 and I2C2 for Xaiver NX](https://forums.developer.nvidia.com/t/the-audio-alc5640-cant-work-on-i2s0-and-i2c2-for-xaiver-nx/179617)
 
 [Advanced Linux Sound Architecture](https://wiki.archlinux.org/title/Advanced_Linux_Sound_Architecture)
+
+[ALSA project - the C library reference](https://www.alsa-project.org/alsa-doc/alsa-lib/group__ucm__conf.html)
