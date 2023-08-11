@@ -83,10 +83,10 @@ index 000000000..b5bcdfeb3
 +};
 diff --git a/arch/arm64/boot/dts/rockchip/rk3399-tn3399-v3.dts b/arch/arm64/boot/dts/rockchip/rk3399-tn3399-v3.dts
 new file mode 100644
-index 000000000..6f66933b8
+index 000000000..40b1080f7
 --- /dev/null
 +++ b/arch/arm64/boot/dts/rockchip/rk3399-tn3399-v3.dts
-@@ -0,0 +1,716 @@
+@@ -0,0 +1,798 @@
 +/dts-v1/;
 +#include <dt-bindings/pwm/pwm.h>
 +#include "rk3399.dtsi"
@@ -123,6 +123,51 @@ index 000000000..6f66933b8
 +			gpios = <&gpio1 RK_PC2 GPIO_ACTIVE_LOW>;
 +			linux,default-trigger = "heartbeat";
 +		};
++	};
++
++	rt5640-sound {
++		compatible = "simple-audio-card";
++		pinctrl-names = "default";
++		pinctrl-0 = <&hp_det_pin>;
++		simple-audio-card,name = "rockchip,rt5640-codec";
++		simple-audio-card,format = "i2s";
++		simple-audio-card,mclk-fs = <256>;
++		simple-audio-card,widgets =
++			"Microphone", "Internal Microphone",
++			"Headphone", "Headphone Jack",
++			"Speaker", "Internal Speakers";
++		simple-audio-card,routing =
++			"Internal Microphone", "MICBIAS1",
++			"IN1P", "Internal Microphone",
++			"IN1N", "Internal Microphone",
++			"Headphone Jack", "HPOL",
++			"Headphone Jack", "HPOR",
++			"NS4258 INL", "SPOLP",
++			"NS4258 INL", "SPOLN",
++			"NS4258 INR", "SPORP",
++			"NS4258 INR", "SPORN",
++			"Internal Speakers", "NS4258 OUTL",
++			"Internal Speakers", "NS4258 OUTR";
++		simple-audio-card,hp-det-gpio = <&gpio1 RK_PC6 GPIO_ACTIVE_HIGH>;
++		simple-audio-card,aux-devs = <&speaker_amp>;
++		simple-audio-card,pin-switches = "Internal Speakers";
++
++		simple-audio-card,cpu {
++			sound-dai = <&i2s1>;
++		};
++
++		simple-audio-card,codec {
++			sound-dai = <&rt5640>;
++		};
++	};
++
++	speaker_amp: speaker-amp {
++		compatible = "simple-audio-amplifier";
++		pinctrl-names = "default";
++		pinctrl-0 = <&ns4258_en>;
++		enable-gpios = <&gpio4 RK_PD2 GPIO_ACTIVE_HIGH>;
++		sound-name-prefix = "NS4258";
++		VCC-supply = <&audio_5v>;
 +	};
 +
 +	sdio_pwrseq: sdio-pwrseq {
@@ -220,6 +265,16 @@ index 000000000..6f66933b8
 +		regulator-boot-on;
 +		regulator-min-microvolt = <800000>;
 +		regulator-max-microvolt = <1700000>;
++	};
++
++	audio_5v: audio-5v {
++		compatible = "regulator-fixed";
++		regulator-name = "audio_5v";
++		regulator-always-on;
++		regulator-boot-on;
++		regulator-min-microvolt = <5000000>;
++		regulator-max-microvolt = <5000000>;
++		vin-supply = <&vcc5v0_sys>;
 +	};
 +};
 +
@@ -527,6 +582,17 @@ index 000000000..6f66933b8
 +	i2c-scl-rising-time-ns = <300>;
 +	i2c-scl-falling-time-ns = <15>;
 +	status = "okay";
++
++	rt5640: rt5640@1c {
++		compatible = "realtek,rt5640";
++		reg = <0x1c>;
++		clocks = <&cru SCLK_I2S_8CH_OUT>;
++		clock-names = "mclk";
++		realtek,in1-differential;
++		#sound-dai-cells = <0>;
++		pinctrl-names = "default";
++		pinctrl-0 = <&ear_ctrl_pin>;
++	};
 +};
 +
 +&i2c2 {
@@ -547,13 +613,15 @@ index 000000000..6f66933b8
 +	status = "okay";
 +};
 +
-+// NC
 +&i2s0 {
++	rockchip,playback-channels = <8>;
++	rockchip,capture-channels = <8>;
 +	status = "okay";
 +};
 +
-+// CODEC
 +&i2s1 {
++	rockchip,playback-channels = <2>;
++	rockchip,capture-channels = <2>;
 +	status = "okay";
 +};
 +
@@ -615,6 +683,20 @@ index 000000000..6f66933b8
 +			rockchip,pins = <0 RK_PA1 RK_FUNC_GPIO &pcfg_pull_none>;
 +		};
 +
++	};
++
++	sound {
++		ear_ctrl_pin: ear-ctrl-pin {
++			rockchip,pins = <4 RK_PC5 RK_FUNC_GPIO &pcfg_output_high>;
++		};
++
++		hp_det_pin: hp-det-pin {
++			rockchip,pins = <1 RK_PC6 RK_FUNC_GPIO &pcfg_pull_none>;
++		};
++
++		ns4258_en: ns4258-en {
++			rockchip,pins = <4 RK_PD2 RK_FUNC_GPIO &pcfg_pull_none>;
++		};
 +	};
 +
 +	sdio-pwrseq {
