@@ -8,6 +8,7 @@
 		pwms = <&pwm0 0 25000 0>;
 		brightness-levels = <0 4 8 16 32 64 128 255>;
 		default-brightness-level = <7>;
+		enable-gpios = <&gpio4 RK_PD1 GPIO_ACTIVE_HIGH>;
 	};
 
 	vcc_panel: vcc-panel {
@@ -17,9 +18,6 @@
 		pinctrl-names = "default";
 		pinctrl-0 = <&vcc_panel_en>;
 		regulator-name = "vcc_panel";
-		regulator-min-microvolt = <3300000>;
-		regulator-max-microvolt = <3300000>;
-		vin-supply = <&vcc3v3_sys>;
 	};
 };
 
@@ -41,11 +39,9 @@
 
 	panel@0 {
 		reg = <0>;
-		compatible = "toshiba,tc358775-panel";
 		backlight = <&backlight>;
-		rotation = <0>;
 
-		panel-supply = <&vcc_panel>;
+		power-supply = <&vcc_panel>;
 
 		port {
 			tc358775_in: endpoint {
