@@ -48,10 +48,10 @@ BSP内核推荐[mrfixit2001](https://github.com/mrfixit2001/rockchip-kernel)维�
 # 查找第一个未使用的loop设备，一般是/dev/loop0
 sudo losetup -f
 # 将/dev/loop0和img关联起来
-sudo losetup path_to_your_img /dev/loop0
+sudo losetup /dev/loop0 path_to_your_img
 # 根据img更新/dev/loop的分区
 sudo partprobe /dev/loop0
-# 挂载分区到临时目录
+# 挂载分区到临时目录（假设img有两个分区，分别为根分区和boot分区）
 sudo mount /dev/loop0p2 /mnt && sudo mount /dev/loop0p1 /mnt/boot
 # chroot到临时目录，主机需要安装systemd-container qemu-user-static binfmt
 sudo systemd-nspawn -D /mnt -M tmp bash
