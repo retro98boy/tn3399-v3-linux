@@ -83,17 +83,18 @@ static int tc358775_prepare(struct drm_panel *panel)
 	if (ctx->prepared)
 		return 0;
 
+	ret = tc358775_send_init_seq(ctx);
+	if (ret < 0) {
+		dev_err(dev, "failed to initialize panel: %d\n", ret);
+		return ret;
+	}
+
+	// 将打开LVDS供电的操作放在初始化TC358775后面
+	// TC358775的初始化是不需要接有屏幕的，相反，如果屏幕先工作（打开LVDS供电并开启屏幕背光），TC358775初始化过程中屏幕会白色闪屏
+	// 针对一些背光不可单独控的屏幕（打开屏幕供电后背光也就打开了），交换顺序可避免这个问题
 	ret = regulator_enable(ctx->panel_supply);
 	if (ret < 0)
 		return ret;
-
-	msleep(50);
-
-	ret = tc358775_send_init_seq(ctx);
-	if (ret < 0) {
-		dev_err(dev, "Failed to initialize panel: %d\n", ret);
-		return -1;
-	}
 
 	ctx->prepared = true;
 
