@@ -4,29 +4,47 @@
 
 ## 编译[ATF](https://github.com/ARM-software/arm-trusted-firmware/tags)
 
-下载源码并解压，cd进入
+下载源码并解压，编译:
 
-执行make CROSS_COMPILE=aarch64-linux-gnu- PLAT=rk3399编译
+```
+make CROSS_COMPILE=aarch64-linux-gnu- PLAT=rk3399
+```
 
-编译完成后设置环境变量：export BL31=path_to_your_bl31.elf
+编译完成后设置环境变量：
+
+```
+export BL31=path_to_your_bl31.elf
+```
 
 ## 编译[U-Boot](https://github.com/u-boot/u-boot/tags)
 
-下载主线U-Boot源码，解压并打上项目中提供的patch
+下载主线U-Boot源码，解压并打上项目中提供的patch，编译：
 
-执行make tn3399-v3-rk3399_defconfig && make CROSS_COMPILE=aarch64-linux-gnu- -j32完成编译
+```
+make tn3399-v3-rk3399_defconfig && make CROSS_COMPILE=aarch64-linux-gnu- -j32
+```
 
-源码目录下的u-boot-rockchip.bin就是所需镜像
+编译成功后，源码目录下的u-boot-rockchip.bin就是所需镜像
 
-使用dd将其烧录到img镜像或者TF卡的32k偏移处即可，**注意到img镜像时，要加上conv=notrunc选项**
+使用dd命令将其刻录到img镜像或者TF卡的32k偏移处即可，**注意刻录到img镜像时，要加上conv=notrunc选项**：
+
+```
+dd if=path_to_u-boot-rockchip.bin of=path_to_your_img bs=1k seek=32 status=progress oflag=direct conv=notrunc
+```
 
 # 编译内核
 
-下载内核源码，添加项目提供的dts，正常编译即可
+## 主线内核
 
-主线内核从kernel.org下载
+从kernel.org下载主线内核源码并解压，添加仓库提供的dts和TC358775驱动再编译，如何添加可参考仓库中的`linux6.5.2-add-tn3399-v3-support.patch`补丁
 
-BSP内核推荐[mrfixit2001](https://github.com/mrfixit2001/rockchip-kernel)维护的版本
+PS：
+
+补丁不会经常更新，目前的补丁会添加2.0.1版本TC358775驱动，如果后续dts和TC358775驱动有更新，请参考补丁自行添加最新版dts和TC358775驱动
+
+## BSP内核（不再维护）
+
+BSP内核推荐[mrfixit2001](https://github.com/mrfixit2001/rockchip-kernel)维护的版本，添加本仓库的dts后再编译
 
 # 构建发行版
 
@@ -73,7 +91,7 @@ sudo dd if=path_to_uboot of=path_to_your_img bs=1k seek=32 conv=notrunc
 
 可使用dd命令创建空白镜像，对镜像进行分区，放入rootfs，最后刻录U-Boot，一个系统镜像就制作完成
 
-x86主机chroot到arm的rootfs需要安装qemu-user-static。chroot的方法有chroot和systemd-nspawn两种，推荐第二种
+x86主机chroot到arm的rootfs需要安装qemu-user-static。推荐使用systemd-nspawn来chroot
 
 大概操作：
 
