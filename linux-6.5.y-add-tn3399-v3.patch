@@ -1,19 +1,109 @@
-diff -uprN linux-6.5.2.orig/arch/arm64/boot/dts/rockchip/Makefile linux-6.5.2/arch/arm64/boot/dts/rockchip/Makefile
---- linux-6.5.2.orig/arch/arm64/boot/dts/rockchip/Makefile	2023-09-07 04:22:26.000000000 +0800
-+++ linux-6.5.2/arch/arm64/boot/dts/rockchip/Makefile	2023-09-09 21:08:58.867227416 +0800
-@@ -68,6 +68,9 @@ dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3399-ro
+diff --git a/arch/arm64/boot/dts/rockchip/Makefile b/arch/arm64/boot/dts/rockchip/Makefile
+index b7fb908eb..b549755c5 100644
+--- a/arch/arm64/boot/dts/rockchip/Makefile
++++ b/arch/arm64/boot/dts/rockchip/Makefile
+@@ -68,6 +68,8 @@ dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3399-rockpro64-v2.dtb
  dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3399-rockpro64.dtb
  dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3399-sapphire.dtb
  dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3399-sapphire-excavator.dtb
 +dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3399-tn3399-v3.dtb
 +dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3399-tn3399-v3-with-1024x600-single-8bit-lvds-panel.dtb
-+dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3399-tn3399-v3-with-1920x1080-dual-8bit-lvds-panel.dtb
  dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3399pro-rock-pi-n10.dtb
  dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3566-anbernic-rg353p.dtb
  dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3566-anbernic-rg353ps.dtb
-diff -uprN linux-6.5.2.orig/arch/arm64/boot/dts/rockchip/rk3399-tn3399-v3.dts linux-6.5.2/arch/arm64/boot/dts/rockchip/rk3399-tn3399-v3.dts
---- linux-6.5.2.orig/arch/arm64/boot/dts/rockchip/rk3399-tn3399-v3.dts	1970-01-01 08:00:00.000000000 +0800
-+++ linux-6.5.2/arch/arm64/boot/dts/rockchip/rk3399-tn3399-v3.dts	2023-09-08 17:36:43.359690218 +0800
+diff --git a/arch/arm64/boot/dts/rockchip/rk3399-tn3399-v3-with-1024x600-single-8bit-lvds-panel.dts b/arch/arm64/boot/dts/rockchip/rk3399-tn3399-v3-with-1024x600-single-8bit-lvds-panel.dts
+new file mode 100644
+index 000000000..ccba3268c
+--- /dev/null
++++ b/arch/arm64/boot/dts/rockchip/rk3399-tn3399-v3-with-1024x600-single-8bit-lvds-panel.dts
+@@ -0,0 +1,16 @@
++/dts-v1/;
++#include "rk3399-tn3399-v3-with-lvds-panel.dtsi"
++
++/ {
++	vcc_panel: vcc-panel {
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++		vin-supply = <&vcc3v3_sys>;
++	};
++};
++
++&mipi_dsi {
++	panel@0 {
++		compatible = "tc358775,1024x600-single-8bit";
++	};
++};
+diff --git a/arch/arm64/boot/dts/rockchip/rk3399-tn3399-v3-with-lvds-panel.dtsi b/arch/arm64/boot/dts/rockchip/rk3399-tn3399-v3-with-lvds-panel.dtsi
+new file mode 100644
+index 000000000..ee08c93dd
+--- /dev/null
++++ b/arch/arm64/boot/dts/rockchip/rk3399-tn3399-v3-with-lvds-panel.dtsi
+@@ -0,0 +1,60 @@
++/dts-v1/;
++#include "rk3399-tn3399-v3.dts"
++
++/ {
++	backlight: backlight {
++		status = "okay";
++		compatible = "pwm-backlight";
++		pwms = <&pwm0 0 25000 0>;
++		brightness-levels = <0 4 8 16 32 64 128 255>;
++		default-brightness-level = <7>;
++		enable-gpios = <&gpio4 RK_PD1 GPIO_ACTIVE_HIGH>;
++	};
++
++	vcc_panel: vcc-panel {
++		compatible = "regulator-fixed";
++		enable-active-high;
++		gpio = <&gpio1 RK_PA4 GPIO_ACTIVE_HIGH>;
++		pinctrl-names = "default";
++		pinctrl-0 = <&vcc_panel_en>;
++		regulator-name = "vcc_panel";
++	};
++};
++
++&mipi_dsi {
++	status = "okay";
++	clock-master;
++
++	ports {
++		mipi_out: port@1 {
++			#address-cells = <0>;
++			#size-cells = <0>;
++			reg = <1>;
++
++			dsi_out: endpoint {
++				remote-endpoint = <&tc358775_in>;
++			};
++		};
++	};
++
++	panel@0 {
++		reg = <0>;
++		backlight = <&backlight>;
++
++		power-supply = <&vcc_panel>;
++
++		port {
++			tc358775_in: endpoint {
++				remote-endpoint = <&dsi_out>;
++			};
++		};
++	};
++};
++
++&pinctrl {
++	panel {
++		vcc_panel_en: vcc-panel-en {
++			rockchip,pins = <1 RK_PA4 RK_FUNC_GPIO &pcfg_pull_none>;
++		};
++	};
++};
+diff --git a/arch/arm64/boot/dts/rockchip/rk3399-tn3399-v3.dts b/arch/arm64/boot/dts/rockchip/rk3399-tn3399-v3.dts
+new file mode 100644
+index 000000000..40b1080f7
+--- /dev/null
++++ b/arch/arm64/boot/dts/rockchip/rk3399-tn3399-v3.dts
 @@ -0,0 +1,798 @@
 +/dts-v1/;
 +#include <dt-bindings/pwm/pwm.h>
@@ -813,113 +903,10 @@ diff -uprN linux-6.5.2.orig/arch/arm64/boot/dts/rockchip/rk3399-tn3399-v3.dts li
 +&vopl_mmu {
 +	status = "okay";
 +};
-diff -uprN linux-6.5.2.orig/arch/arm64/boot/dts/rockchip/rk3399-tn3399-v3-with-1024x600-single-8bit-lvds-panel.dts linux-6.5.2/arch/arm64/boot/dts/rockchip/rk3399-tn3399-v3-with-1024x600-single-8bit-lvds-panel.dts
---- linux-6.5.2.orig/arch/arm64/boot/dts/rockchip/rk3399-tn3399-v3-with-1024x600-single-8bit-lvds-panel.dts	1970-01-01 08:00:00.000000000 +0800
-+++ linux-6.5.2/arch/arm64/boot/dts/rockchip/rk3399-tn3399-v3-with-1024x600-single-8bit-lvds-panel.dts	2023-08-19 21:57:23.693063741 +0800
-@@ -0,0 +1,16 @@
-+/dts-v1/;
-+#include "rk3399-tn3399-v3-with-lvds-panel.dtsi"
-+
-+/ {
-+	vcc_panel: vcc-panel {
-+		regulator-min-microvolt = <3300000>;
-+		regulator-max-microvolt = <3300000>;
-+		vin-supply = <&vcc3v3_sys>;
-+	};
-+};
-+
-+&mipi_dsi {
-+	panel@0 {
-+		compatible = "tc358775,1024x600-single-8bit";
-+	};
-+};
-diff -uprN linux-6.5.2.orig/arch/arm64/boot/dts/rockchip/rk3399-tn3399-v3-with-1920x1080-dual-8bit-lvds-panel.dts linux-6.5.2/arch/arm64/boot/dts/rockchip/rk3399-tn3399-v3-with-1920x1080-dual-8bit-lvds-panel.dts
---- linux-6.5.2.orig/arch/arm64/boot/dts/rockchip/rk3399-tn3399-v3-with-1920x1080-dual-8bit-lvds-panel.dts	1970-01-01 08:00:00.000000000 +0800
-+++ linux-6.5.2/arch/arm64/boot/dts/rockchip/rk3399-tn3399-v3-with-1920x1080-dual-8bit-lvds-panel.dts	2023-09-09 20:52:16.010292885 +0800
-@@ -0,0 +1,16 @@
-+/dts-v1/;
-+#include "rk3399-tn3399-v3-with-lvds-panel.dtsi"
-+
-+/ {
-+	vcc_panel: vcc-panel {
-+		regulator-min-microvolt = <3300000>;
-+		regulator-max-microvolt = <3300000>;
-+		vin-supply = <&vcc3v3_sys>;
-+	};
-+};
-+
-+&mipi_dsi {
-+	panel@0 {
-+		compatible = "tc358775,1920x1080-dual-8bit";
-+	};
-+};
-diff -uprN linux-6.5.2.orig/arch/arm64/boot/dts/rockchip/rk3399-tn3399-v3-with-lvds-panel.dtsi linux-6.5.2/arch/arm64/boot/dts/rockchip/rk3399-tn3399-v3-with-lvds-panel.dtsi
---- linux-6.5.2.orig/arch/arm64/boot/dts/rockchip/rk3399-tn3399-v3-with-lvds-panel.dtsi	1970-01-01 08:00:00.000000000 +0800
-+++ linux-6.5.2/arch/arm64/boot/dts/rockchip/rk3399-tn3399-v3-with-lvds-panel.dtsi	2023-09-09 20:39:23.265269475 +0800
-@@ -0,0 +1,60 @@
-+/dts-v1/;
-+#include "rk3399-tn3399-v3.dts"
-+
-+/ {
-+	backlight: backlight {
-+		status = "okay";
-+		compatible = "pwm-backlight";
-+		pwms = <&pwm0 0 25000 0>;
-+		brightness-levels = <0 4 8 16 32 64 128 255>;
-+		default-brightness-level = <7>;
-+		enable-gpios = <&gpio4 RK_PD1 GPIO_ACTIVE_HIGH>;
-+	};
-+
-+	vcc_panel: vcc-panel {
-+		compatible = "regulator-fixed";
-+		enable-active-high;
-+		gpio = <&gpio1 RK_PA4 GPIO_ACTIVE_HIGH>;
-+		pinctrl-names = "default";
-+		pinctrl-0 = <&vcc_panel_en>;
-+		regulator-name = "vcc_panel";
-+	};
-+};
-+
-+&mipi_dsi {
-+	status = "okay";
-+	clock-master;
-+
-+	ports {
-+		mipi_out: port@1 {
-+			#address-cells = <0>;
-+			#size-cells = <0>;
-+			reg = <1>;
-+
-+			dsi_out: endpoint {
-+				remote-endpoint = <&tc358775_in>;
-+			};
-+		};
-+	};
-+
-+	panel@0 {
-+		reg = <0>;
-+		backlight = <&backlight>;
-+
-+		power-supply = <&vcc_panel>;
-+
-+		port {
-+			tc358775_in: endpoint {
-+				remote-endpoint = <&dsi_out>;
-+			};
-+		};
-+	};
-+};
-+
-+&pinctrl {
-+	panel {
-+		vcc_panel_en: vcc-panel-en {
-+			rockchip,pins = <1 RK_PA4 RK_FUNC_GPIO &pcfg_pull_none>;
-+		};
-+	};
-+};
-diff -uprN linux-6.5.2.orig/drivers/gpu/drm/panel/Kconfig linux-6.5.2/drivers/gpu/drm/panel/Kconfig
---- linux-6.5.2.orig/drivers/gpu/drm/panel/Kconfig	2023-09-07 04:22:26.000000000 +0800
-+++ linux-6.5.2/drivers/gpu/drm/panel/Kconfig	2023-09-09 21:05:36.535022839 +0800
+diff --git a/drivers/gpu/drm/panel/Kconfig b/drivers/gpu/drm/panel/Kconfig
+index 203c0ef0b..f2713f2a7 100644
+--- a/drivers/gpu/drm/panel/Kconfig
++++ b/drivers/gpu/drm/panel/Kconfig
 @@ -812,4 +812,13 @@ config DRM_PANEL_XINPENG_XPP055C272
  	  Say Y here if you want to enable support for the Xinpeng
  	  XPP055C272 controller for 720x1280 LCD panels with MIPI/RGB/SPI
@@ -934,18 +921,21 @@ diff -uprN linux-6.5.2.orig/drivers/gpu/drm/panel/Kconfig linux-6.5.2/drivers/gp
 +	  say Y here if you want to enable support for TOSHIBA TC358775
 +	  panel as found in TN3399_V3.
  endmenu
-diff -uprN linux-6.5.2.orig/drivers/gpu/drm/panel/Makefile linux-6.5.2/drivers/gpu/drm/panel/Makefile
---- linux-6.5.2.orig/drivers/gpu/drm/panel/Makefile	2023-09-07 04:22:26.000000000 +0800
-+++ linux-6.5.2/drivers/gpu/drm/panel/Makefile	2023-09-09 21:05:36.535022839 +0800
-@@ -83,3 +83,4 @@ obj-$(CONFIG_DRM_PANEL_VISIONOX_RM69299)
+diff --git a/drivers/gpu/drm/panel/Makefile b/drivers/gpu/drm/panel/Makefile
+index 30cf553c8..037bb5170 100644
+--- a/drivers/gpu/drm/panel/Makefile
++++ b/drivers/gpu/drm/panel/Makefile
+@@ -83,3 +83,4 @@ obj-$(CONFIG_DRM_PANEL_VISIONOX_RM69299) += panel-visionox-rm69299.o
  obj-$(CONFIG_DRM_PANEL_VISIONOX_VTDR6130) += panel-visionox-vtdr6130.o
  obj-$(CONFIG_DRM_PANEL_WIDECHIPS_WS2401) += panel-widechips-ws2401.o
  obj-$(CONFIG_DRM_PANEL_XINPENG_XPP055C272) += panel-xinpeng-xpp055c272.o
 +obj-$(CONFIG_DRM_PANEL_TOSHIBA_TC358775) += panel-toshiba-tc358775.o
-diff -uprN linux-6.5.2.orig/drivers/gpu/drm/panel/panel-toshiba-tc358775.c linux-6.5.2/drivers/gpu/drm/panel/panel-toshiba-tc358775.c
---- linux-6.5.2.orig/drivers/gpu/drm/panel/panel-toshiba-tc358775.c	1970-01-01 08:00:00.000000000 +0800
-+++ linux-6.5.2/drivers/gpu/drm/panel/panel-toshiba-tc358775.c	2023-09-09 21:01:31.988632706 +0800
-@@ -0,0 +1,321 @@
+diff --git a/drivers/gpu/drm/panel/panel-toshiba-tc358775.c b/drivers/gpu/drm/panel/panel-toshiba-tc358775.c
+new file mode 100644
+index 000000000..588c62556
+--- /dev/null
++++ b/drivers/gpu/drm/panel/panel-toshiba-tc358775.c
+@@ -0,0 +1,263 @@
 +#include "linux/of_device.h"
 +#include <linux/delay.h>
 +#include <linux/gpio/consumer.h>
@@ -997,22 +987,6 @@ diff -uprN linux-6.5.2.orig/drivers/gpu/drm/panel/panel-toshiba-tc358775.c linux
 +	.vtotal = 600 + 16 + 6 + 16,
 +};
 +
-+static const struct drm_display_mode common_1920_1080_display_mode = {
-+	.clock = 148500,
-+
-+	.hdisplay = 1920,
-+	.hsync_start = 1920 + 88,
-+	.hsync_end = 1920 + 88 + 44,
-+	.htotal = 1920 + 88 + 44 + 148,
-+
-+	.vdisplay = 1080,
-+	.vsync_start = 1080 + 4,
-+	.vsync_end = 1080 + 4 + 5,
-+	.vtotal = 1080 + 4 + 5 + 36,
-+
-+	.type = DRM_MODE_TYPE_DRIVER | DRM_MODE_TYPE_PREFERRED,
-+};
-+
 +static const uint8_t tc358775_1024_600_single_8bit_init_seq[27][6] = {
 +	{ 0x3C, 0x01, 0x05, 0x00, 0x03, 0x00 },
 +	{ 0x14, 0x01, 0x03, 0x00, 0x00, 0x00 },
@@ -1043,36 +1017,6 @@ diff -uprN linux-6.5.2.orig/drivers/gpu/drm/panel/panel-toshiba-tc358775.c linux
 +	{ 0x9C, 0x04, 0x41, 0x01, 0x00, 0x00 },
 +};
 +
-+static const uint8_t tc358775_1920_1080_dual_8bit_init_seq[27][6] = {
-+	{ 0x3C, 0x01, 0x0F, 0x00, 0x0C, 0x00 },
-+	{ 0x14, 0x01, 0x0A, 0x00, 0x00, 0x00 },
-+	{ 0x64, 0x01, 0x15, 0x00, 0x00, 0x00 },
-+	{ 0x68, 0x01, 0x15, 0x00, 0x00, 0x00 },
-+	{ 0x6C, 0x01, 0x15, 0x00, 0x00, 0x00 },
-+	{ 0x70, 0x01, 0x15, 0x00, 0x00, 0x00 },
-+	{ 0x34, 0x01, 0x1F, 0x00, 0x00, 0x00 },
-+	{ 0x10, 0x02, 0x1F, 0x00, 0x00, 0x00 },
-+	{ 0x04, 0x01, 0x01, 0x00, 0x00, 0x00 },
-+	{ 0x04, 0x02, 0x01, 0x00, 0x00, 0x00 },
-+	{ 0x50, 0x04, 0x20, 0x01, 0xF0, 0x03 },
-+	{ 0x54, 0x04, 0x2C, 0x00, 0x94, 0x00 },
-+	{ 0x58, 0x04, 0x80, 0x07, 0x58, 0x00 },
-+	{ 0x5C, 0x04, 0x05, 0x00, 0x24, 0x00 },
-+	{ 0x60, 0x04, 0x38, 0x04, 0x04, 0x00 },
-+	{ 0x64, 0x04, 0x01, 0x00, 0x00, 0x00 },
-+	{ 0xA0, 0x04, 0x06, 0x80, 0x44, 0x00 },
-+	{ 0xA0, 0x04, 0x06, 0x80, 0x04, 0x00 },
-+	{ 0x04, 0x05, 0x04, 0x00, 0x00, 0x00 },
-+	{ 0x80, 0x04, 0x00, 0x01, 0x02, 0x03 },
-+	{ 0x84, 0x04, 0x04, 0x07, 0x05, 0x08 },
-+	{ 0x88, 0x04, 0x09, 0x0A, 0x0E, 0x0F },
-+	{ 0x8C, 0x04, 0x0B, 0x0C, 0x0D, 0x10 },
-+	{ 0x90, 0x04, 0x16, 0x17, 0x11, 0x12 },
-+	{ 0x94, 0x04, 0x13, 0x14, 0x15, 0x1B },
-+	{ 0x98, 0x04, 0x18, 0x19, 0x1A, 0x06 },
-+	{ 0x9C, 0x04, 0x43, 0x05, 0x00, 0x00 },
-+};
-+
 +static const struct tc358775_setting tc358775_1024_600_single_8bit_setting = {
 +	.dsi_flags = MIPI_DSI_MODE_VIDEO | MIPI_DSI_MODE_VIDEO_BURST |
 +		     MIPI_DSI_MODE_LPM | MIPI_DSI_MODE_NO_EOT_PACKET,
@@ -1080,15 +1024,6 @@ diff -uprN linux-6.5.2.orig/drivers/gpu/drm/panel/panel-toshiba-tc358775.c linux
 +	.dsi_lanes = 4,
 +	.dsi_init_seq = &tc358775_1024_600_single_8bit_init_seq,
 +	.display_mode = &common_1024_600_display_mode,
-+};
-+
-+static const struct tc358775_setting tc358775_1920_1080_dual_8bit_setting = {
-+	.dsi_flags = MIPI_DSI_MODE_VIDEO | MIPI_DSI_MODE_VIDEO_BURST |
-+		     MIPI_DSI_MODE_LPM | MIPI_DSI_MODE_NO_EOT_PACKET,
-+	.dsi_pix_fmt = MIPI_DSI_FMT_RGB888,
-+	.dsi_lanes = 4,
-+	.dsi_init_seq = &tc358775_1920_1080_dual_8bit_init_seq,
-+	.display_mode = &common_1920_1080_display_mode,
 +};
 +
 +static int tc358775_send_init_seq(struct tc358775 *priv)
@@ -1126,6 +1061,7 @@ diff -uprN linux-6.5.2.orig/drivers/gpu/drm/panel/panel-toshiba-tc358775.c linux
 +		dev_err(dev, "failed to initialize panel: %d\n", ret);
 +		return ret;
 +	}
++	msleep(100);
 +
 +	// 将打开LVDS供电的操作放在初始化TC358775后面
 +	// TC358775的初始化是不需要接有屏幕的，相反，如果屏幕先工作（打开LVDS供电并开启屏幕背光），TC358775初始化过程中屏幕会白色闪屏
@@ -1186,10 +1122,6 @@ diff -uprN linux-6.5.2.orig/drivers/gpu/drm/panel/panel-toshiba-tc358775.c linux
 +	{
 +		.compatible = "tc358775,1024x600-single-8bit",
 +		.data = &tc358775_1024_600_single_8bit_setting,
-+	},
-+	{
-+		.compatible = "tc358775,1920x1080-dual-8bit",
-+		.data = &tc358775_1920_1080_dual_8bit_setting,
 +	},
 +	{ /* sentinel */ }
 +};
