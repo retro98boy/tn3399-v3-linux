@@ -2,34 +2,40 @@
 
 参考[lanseyujie](https://github.com/lanseyujie/tn3399_v3)的教程
 
-## 编译[ATF](https://github.com/ARM-software/arm-trusted-firmware/tags)
+## 编译ATF
 
-下载源码并解压，编译:
+下载[源码](https://github.com/ARM-software/arm-trusted-firmware/tags)并解压，编译:
 
 ```
 make CROSS_COMPILE=aarch64-linux-gnu- PLAT=rk3399
 ```
 
-编译完成后设置环境变量：
+编译成功后设置环境变量：
 
 ```
 export BL31=path_to_your_bl31.elf
 ```
 
-## 编译[U-Boot](https://github.com/u-boot/u-boot/tags)
+## 编译U-Boot
 
-下载主线U-Boot源码，解压并打上项目中提供的patch，编译：
+下载主线U-Boot[源码](https://github.com/u-boot/u-boot/tags)，解压并打上项目中提供的patch，编译：
 
 ```
 make tn3399-v3-rk3399_defconfig && make CROSS_COMPILE=aarch64-linux-gnu- -j32
 ```
 
-编译成功后，源码目录下的u-boot-rockchip.bin就是所需镜像
+编译成功后，源码目录下出现`idbloader.img` `u-boot.itb`和`u-boot-rockchip.bin`，后者由前面两个镜像根据its合并而来
 
-使用dd命令将其刻录到img镜像或者TF卡的32k偏移处即可，**注意刻录到img镜像时，要加上conv=notrunc选项**：
+## 安装U-Boot
+
+这里使用单独的`idbloader.img`和`u-boot.itb`
+
+`idbloader.img`应该位于系统镜像的32 KiB偏移处，`u-boot.itb`应该位于系统镜像的8 MiB偏移处，刻录命令如下：
 
 ```
-dd if=path_to_u-boot-rockchip.bin of=path_to_your_img bs=1k seek=32 status=progress oflag=direct conv=notrunc
+# dd默认操作单位为1个block，1 block = 512 Byte，故64 block = 32 KiB，16384 block = 8192 KiB = 8 MiB
+dd if=idbloader.img of=path_to_your_img seek=64 status=progress oflag=direct conv=notrunc
+dd if=u-boot.itb of=path_to_your_img seek=16384 status=progress oflag=direct conv=notrunc
 ```
 
 # 编译内核
