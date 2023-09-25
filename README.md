@@ -36,13 +36,11 @@ dd if=path_to_u-boot-rockchip.bin of=path_to_your_img bs=1k seek=32 status=progr
 
 ## 主线内核
 
-从kernel.org下载主线内核源码并解压，添加仓库提供的dts和TC358775驱动再编译，如何添加可参考仓库中的`linux-6.5.y-add-tn3399-v3.patch`补丁
+从kernel.org下载主线内核源码并解压，添加仓库提供的dts和TC358775驱动再编译，如何添加可参考仓库中的`linux-6.x.y-add-tn3399-v3.patch`补丁
 
-PS：
+PS：补丁不会经常更新，目前的补丁会添加2.0.0版本TC358775驱动，如果后续dts和TC358775驱动有更新，请参考补丁自行添加最新版dts和TC358775驱动
 
-补丁不会经常更新，目前的补丁会添加2.0.0版本TC358775驱动，如果后续dts和TC358775驱动有更新，请参考补丁自行添加最新版dts和TC358775驱动
-
-## BSP内核（Deprecated）
+## BSP内核
 
 BSP内核推荐[mrfixit2001](https://github.com/mrfixit2001/rockchip-kernel)维护的版本，添加本仓库的dts后再编译
 

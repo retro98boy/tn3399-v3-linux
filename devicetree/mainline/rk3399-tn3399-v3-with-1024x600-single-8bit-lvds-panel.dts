@@ -1,4 +1,5 @@
 /dts-v1/;
+
 #include "rk3399-tn3399-v3-with-lvds-panel.dtsi"
 
 / {
@@ -14,3 +15,4 @@
 		compatible = "tc358775,1024x600-single-8bit";
 	};
 };
+

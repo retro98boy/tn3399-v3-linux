@@ -1,13 +1,19 @@
 /dts-v1/;
+
 #include <dt-bindings/pwm/pwm.h>
 #include <dt-bindings/input/input.h>
 #include "rk3399.dtsi"
+#include "rk3399-linux.dtsi"
 #include "rk3399-opp.dtsi"
-#include "rk3399-vop-clk-set.dtsi"
 
 / {
 	model = "TN3399_V3 Board";
 	compatible = "rockchip,tn3399_v3", "rockchip,rk3399";
+
+	chosen {
+		bootargs = "earlyprintk=uart8250,mmio32,0xff1a0000 swiotlb=1";
+		stdout-path = "serial2:1500000n8";
+	};
 
 	dc12v: dc12v {
 		compatible = "regulator-fixed";
@@ -76,6 +82,16 @@
 		vin-supply = <&vcc3v3_sys>;
 	};
 
+	vcca0v9_s3: vcca0v9-s3 {
+		compatible = "regulator-fixed";
+		regulator-name = "vcca0v9_s3";
+		regulator-always-on;
+		regulator-boot-on;
+		regulator-min-microvolt = <900000>;
+		regulator-max-microvolt = <900000>;
+		vin-supply = <&vcc_1v8>;
+	};
+
 	vcc_lan: vcc-lan {
 		compatible = "regulator-fixed";
 		regulator-name = "vcc_lan";
@@ -107,6 +123,38 @@
 		clock-frequency = <125000000>;
 		clock-output-names = "clkin_gmac";
 		#clock-cells = <0>;
+	};
+
+	rt5640-sound {
+		compatible = "simple-audio-card";
+		pinctrl-names = "default";
+		pinctrl-0 = <&hp_det>;
+		simple-audio-card,name = "rockchip,rt5640-codec";
+		simple-audio-card,format = "i2s";
+		simple-audio-card,mclk-fs = <256>;
+		simple-audio-card,widgets =
+			"Microphone", "Internal Microphone",
+			"Headphone", "Headphone Jack",
+			"Speaker", "Internal Speakers";
+		simple-audio-card,routing =
+			"Internal Microphone", "MICBIAS1",
+			"IN1P", "Internal Microphone",
+			"IN1N", "Internal Microphone",
+			"Headphone Jack", "HPOL",
+			"Headphone Jack", "HPOR",
+			"Internal Speakers", "SPOLP",
+			"Internal Speakers", "SPOLN",
+			"Internal Speakers", "SPORP",
+			"Internal Speakers", "SPORN";
+		simple-audio-card,hp-det-gpio = <&gpio1 RK_PC6 GPIO_ACTIVE_HIGH>;
+
+		simple-audio-card,cpu {
+			sound-dai = <&i2s1>;
+		};
+
+		simple-audio-card,codec {
+			sound-dai = <&rt5640>;
+		};
 	};
 
 	hdmi_sound: hdmi-sound {
@@ -161,37 +209,33 @@
 		BT,wake_host_irq = <&gpio0 RK_PA4 GPIO_ACTIVE_HIGH>;
 	};
 
-	gpio-leds {
+	leds {
 		compatible = "gpio-leds";
+		pinctrl-names = "default";
+		pinctrl-0 = <&sys_led>;
 
-		sys_led {
-			label = "sys_led";
+		sys-led {
+			label = "sys";
+			gpios = <&gpio1 RK_PC2 GPIO_ACTIVE_LOW>;
 			linux,default-trigger = "heartbeat";
-			default-state = "on";
-			gpios = <&gpio1 RK_PC2 GPIO_ACTIVE_HIGH>;
 		};
 	};
 };
 
 &hdmi {
-	status = "okay";
 	#address-cells = <1>;
 	#size-cells = <0>;
 	#sound-dai-cells = <0>;
+	status = "okay";
 };
 
 &sdmmc {
-	clock-frequency = <100000000>;
-	max-frequency = <100000000>;
 	supports-sd;
 	bus-width = <4>;
 	cap-mmc-highspeed;
 	cap-sd-highspeed;
 	disable-wp;
 	num-slots = <1>;
-	sd-uhs-sdr12;
-	sd-uhs-sdr25;
-	sd-uhs-sdr50;
 	sd-uhs-sdr104;
 	vmmc-supply = <&vcc3v0_sd>;
 	vqmmc-supply = <&vcc_sdio>;
@@ -202,8 +246,7 @@
 };
 
 &sdio0 {
-	clock-frequency = <100000000>;
-	max-frequency = <100000000>;
+	max-frequency = <200000000>;
 	supports-sdio;
 	bus-width = <4>;
 	disable-wp;
@@ -224,31 +267,38 @@
 };
 
 &sdhci {
+	max-frequency = <150000000>;
 	bus-width = <8>;
 	mmc-hs400-1_8v;
-	mmc-hs400-enhanced-strobe;
 	supports-emmc;
 	non-removable;
+	mmc-hs400-enhanced-strobe;
 	status = "okay";
 };
 
 &i2s0 {
+	#sound-dai-cells = <0>;
 	status = "okay";
 };
 
 &i2s1 {
+	rockchip,i2s-broken-burst-len;
+	rockchip,playback-channels = <2>;
+	rockchip,capture-channels = <2>;
+	#sound-dai-cells = <0>;
 	status = "okay";
 };
 
 &i2s2 {
+	#sound-dai-cells = <0>;
 	status = "okay";
 };
 
 &i2c0 {
-	status = "okay";
 	i2c-scl-rising-time-ns = <168>;
 	i2c-scl-falling-time-ns = <4>;
 	clock-frequency = <400000>;
+	status = "okay";
 
 	vdd_cpu_b: syr827@40 {
 		compatible = "silergy,syr827";
@@ -313,10 +363,6 @@
 		vcc11-supply = <&vcc3v3_sys>;
 		vcc12-supply = <&vcc3v3_sys>;
 		vddio-supply = <&vcc_1v8>;
-
-		rtc {
-			status = "okay";
-		};
 
 		regulators {
 			vdd_center: DCDC_REG1 {
@@ -401,12 +447,12 @@
 			vcc_sdio: LDO_REG4 {
 				regulator-name = "vcc_sdio";
 				regulator-min-microvolt = <1800000>;
-				regulator-max-microvolt = <3000000>;
+				regulator-max-microvolt = <3300000>;
 				regulator-always-on;
 				regulator-boot-on;
 				regulator-state-mem {
 					regulator-on-in-suspend;
-					regulator-suspend-microvolt = <3000000>;
+					regulator-suspend-microvolt = <3300000>;
 				};
 			};
 
@@ -461,7 +507,7 @@
 				regulator-always-on;
 				regulator-boot-on;
 				regulator-state-mem {
-					regulator-off-in-suspend;
+					regulator-on-in-suspend;
 				};
 			};
 
@@ -478,10 +524,27 @@
 };
 
 &i2c1 {
+	i2c-scl-rising-time-ns = <300>;
+	i2c-scl-falling-time-ns = <15>;
 	status = "okay";
+
+	rt5640: rt5640@1c {
+		compatible = "realtek,rt5640";
+		reg = <0x1c>;
+		clocks = <&cru SCLK_I2S_8CH_OUT>;
+		clock-names = "mclk";
+		realtek,in1-differential;
+		#sound-dai-cells = <0>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&ear_ctrl &ns4258_en &i2s_8ch_mclk>;
+	};
 };
 
 &i2c2 {
+	status = "okay";
+};
+
+&i2c3 {
 	status = "okay";
 };
 
@@ -518,8 +581,20 @@
 };
 
 &gpu {
-	status = "okay";
 	mali-supply = <&vdd_gpu>;
+	status = "okay";
+};
+
+&threshold {
+	temperature = <85000>;
+};
+
+&target {
+	temperature = <100000>;
+};
+
+&soc_crit {
+	temperature = <105000>;
 };
 
 &tcphy0 {
@@ -531,20 +606,20 @@
 };
 
 &tsadc {
-	status = "okay";
 	/* tshut mode 0:CRU 1:GPIO */
 	rockchip,hw-tshut-mode = <1>;
 	/* tshut polarity 0:LOW 1:HIGH */
 	rockchip,hw-tshut-polarity = <1>;
 	rockchip,hw-tshut-temp = <110000>;
+	status = "okay";
 };
 
 &u2phy0 {
 	status = "okay";
 
 	u2phy0_host: host-port {
-		status = "okay";
 		phy-supply = <&usb_vbus>;
+		status = "okay";
 	};
 };
 
@@ -552,15 +627,15 @@
 	status = "okay";
 
 	u2phy1_host: host-port {
-		status = "okay";
 		phy-supply = <&usb_vbus>;
+		status = "okay";
 	};
 };
 
 &uart0 {
-	status = "okay";
 	pinctrl-names = "default";
 	pinctrl-0 = <&uart0_xfer &uart0_cts>;
+	status = "okay";
 };
 
 &uart2 {
@@ -587,13 +662,13 @@
 	status = "okay";
 };
 
-&usbdrd3_1 {
-	status = "okay";
-};
-
 &usbdrd_dwc3_0 {
 	status = "okay";
 	dr_mode = "host";
+};
+
+&usbdrd3_1 {
+	status = "okay";
 };
 
 &usbdrd_dwc3_1 {
@@ -614,7 +689,6 @@
 };
 
 &gmac {
-	status = "okay";
 	phy-supply = <&vcc_lan>;
 	phy-mode = "rgmii";
 	clock_in_out = "input";
@@ -628,24 +702,39 @@
 	pinctrl-1 = <&rgmii_sleep_pins>;
 	tx_delay = <0x28>;
 	rx_delay = <0x11>;
+	status = "okay";
 };
 
 &saradc {
-	status = "okay";
 	vref-supply = <&vcca1v8_s3>;
+	status = "okay";
 };
 
 &io_domains {
-	status = "okay";
 	bt656-supply = <&vcc1v8_dvp>;
 	audio-supply = <&vcca1v8_codec>;
 	sdmmc-supply = <&vcc_sdio>;
 	gpio1830-supply = <&vcc_3v0>;
+	status = "okay";
 };
 
 &pinctrl {
+	rt5640 {
+		ear_ctrl: ear-ctrl {
+			rockchip,pins = <4 RK_PC5 RK_FUNC_GPIO &pcfg_output_high>;
+		};
+
+		hp_det: hp-det {
+			rockchip,pins = <1 RK_PC6 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+
+		ns4258_en: ns4258-en {
+			rockchip,pins = <4 RK_PD2 RK_FUNC_GPIO &pcfg_pull_up>;
+		};
+	};
+
 	leds {
-		sys_led_pin: sys-led-pin {
+		sys_led: sys-led {
 			rockchip,pins =
 				<1 RK_PC2 RK_FUNC_GPIO &pcfg_pull_none>;
 		};
@@ -713,8 +802,8 @@
 };
 
 &pmu_io_domains {
-	status = "okay";
 	pmu1830-supply = <&vcc_1v8>;
+	status = "okay";
 };
 
 &vopb {
@@ -764,3 +853,4 @@
 &hdmi_hdcp2 {
 	status = "okay";
 };
+

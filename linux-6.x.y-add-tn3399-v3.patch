@@ -13,11 +13,12 @@ index b7fb908eb..b549755c5 100644
  dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3566-anbernic-rg353ps.dtb
 diff --git a/arch/arm64/boot/dts/rockchip/rk3399-tn3399-v3-with-1024x600-single-8bit-lvds-panel.dts b/arch/arm64/boot/dts/rockchip/rk3399-tn3399-v3-with-1024x600-single-8bit-lvds-panel.dts
 new file mode 100644
-index 000000000..ccba3268c
+index 000000000..c75954305
 --- /dev/null
 +++ b/arch/arm64/boot/dts/rockchip/rk3399-tn3399-v3-with-1024x600-single-8bit-lvds-panel.dts
-@@ -0,0 +1,16 @@
+@@ -0,0 +1,18 @@
 +/dts-v1/;
++
 +#include "rk3399-tn3399-v3-with-lvds-panel.dtsi"
 +
 +/ {
@@ -33,23 +34,56 @@ index 000000000..ccba3268c
 +		compatible = "tc358775,1024x600-single-8bit";
 +	};
 +};
++
 diff --git a/arch/arm64/boot/dts/rockchip/rk3399-tn3399-v3-with-lvds-panel.dtsi b/arch/arm64/boot/dts/rockchip/rk3399-tn3399-v3-with-lvds-panel.dtsi
 new file mode 100644
-index 000000000..ee08c93dd
+index 000000000..f2bda20a1
 --- /dev/null
 +++ b/arch/arm64/boot/dts/rockchip/rk3399-tn3399-v3-with-lvds-panel.dtsi
-@@ -0,0 +1,60 @@
+@@ -0,0 +1,92 @@
 +/dts-v1/;
++
 +#include "rk3399-tn3399-v3.dts"
 +
 +/ {
 +	backlight: backlight {
-+		status = "okay";
 +		compatible = "pwm-backlight";
-+		pwms = <&pwm0 0 25000 0>;
-+		brightness-levels = <0 4 8 16 32 64 128 255>;
-+		default-brightness-level = <7>;
 +		enable-gpios = <&gpio4 RK_PD1 GPIO_ACTIVE_HIGH>;
++		pwms = <&pwm0 0 25000 0>;
++		brightness-levels = <
++			  0   1   2   3   4   5   6   7
++			  8   9  10  11  12  13  14  15
++			 16  17  18  19  20  21  22  23
++			 24  25  26  27  28  29  30  31
++			 32  33  34  35  36  37  38  39
++			 40  41  42  43  44  45  46  47
++			 48  49  50  51  52  53  54  55
++			 56  57  58  59  60  61  62  63
++			 64  65  66  67  68  69  70  71
++			 72  73  74  75  76  77  78  79
++			 80  81  82  83  84  85  86  87
++			 88  89  90  91  92  93  94  95
++			 96  97  98  99 100 101 102 103
++			104 105 106 107 108 109 110 111
++			112 113 114 115 116 117 118 119
++			120 121 122 123 124 125 126 127
++			128 129 130 131 132 133 134 135
++			136 137 138 139 140 141 142 143
++			144 145 146 147 148 149 150 151
++			152 153 154 155 156 157 158 159
++			160 161 162 163 164 165 166 167
++			168 169 170 171 172 173 174 175
++			176 177 178 179 180 181 182 183
++			184 185 186 187 188 189 190 191
++			192 193 194 195 196 197 198 199
++			200 201 202 203 204 205 206 207
++			208 209 210 211 212 213 214 215
++			216 217 218 219 220 221 222 223
++			224 225 226 227 228 229 230 231
++			232 233 234 235 236 237 238 239
++			240 241 242 243 244 245 246 247
++			248 249 250 251 252 253 254 255>;
++		default-brightness-level = <200>;
 +	};
 +
 +	vcc_panel: vcc-panel {
@@ -63,8 +97,8 @@ index 000000000..ee08c93dd
 +};
 +
 +&mipi_dsi {
-+	status = "okay";
 +	clock-master;
++	status = "okay";
 +
 +	ports {
 +		mipi_out: port@1 {
@@ -81,7 +115,6 @@ index 000000000..ee08c93dd
 +	panel@0 {
 +		reg = <0>;
 +		backlight = <&backlight>;
-+
 +		power-supply = <&vcc_panel>;
 +
 +		port {
@@ -99,25 +132,27 @@ index 000000000..ee08c93dd
 +		};
 +	};
 +};
++
 diff --git a/arch/arm64/boot/dts/rockchip/rk3399-tn3399-v3.dts b/arch/arm64/boot/dts/rockchip/rk3399-tn3399-v3.dts
 new file mode 100644
-index 000000000..40b1080f7
+index 000000000..16ec743c1
 --- /dev/null
 +++ b/arch/arm64/boot/dts/rockchip/rk3399-tn3399-v3.dts
-@@ -0,0 +1,798 @@
+@@ -0,0 +1,788 @@
 +/dts-v1/;
++
++#include <dt-bindings/input/linux-event-codes.h>
 +#include <dt-bindings/pwm/pwm.h>
 +#include "rk3399.dtsi"
-+#include "rk3399-opp.dtsi"
 +
 +/ {
 +	model = "TN3399_V3 Board";
 +	compatible = "rockchip,tn3399_v3", "rockchip,rk3399";
 +
 +	aliases {
-+		mmc0 = &sdio0;
++		mmc0 = &sdhci;
 +		mmc1 = &sdmmc;
-+		mmc2 = &sdhci;
++		mmc2 = &sdio0;
 +	};
 +
 +	chosen {
@@ -131,12 +166,12 @@ index 000000000..40b1080f7
 +		#clock-cells = <0>;
 +	};
 +
-+	gpio-leds {
++	leds {
 +		compatible = "gpio-leds";
 +		pinctrl-names = "default";
-+		pinctrl-0 = <&sys_led_pin>;
++		pinctrl-0 = <&sys_led>;
 +
-+		sys_led: led-0 {
++		sys-led {
 +			label = "sys";
 +			gpios = <&gpio1 RK_PC2 GPIO_ACTIVE_LOW>;
 +			linux,default-trigger = "heartbeat";
@@ -146,7 +181,7 @@ index 000000000..40b1080f7
 +	rt5640-sound {
 +		compatible = "simple-audio-card";
 +		pinctrl-names = "default";
-+		pinctrl-0 = <&hp_det_pin>;
++		pinctrl-0 = <&hp_det>;
 +		simple-audio-card,name = "rockchip,rt5640-codec";
 +		simple-audio-card,format = "i2s";
 +		simple-audio-card,mclk-fs = <256>;
@@ -191,7 +226,7 @@ index 000000000..40b1080f7
 +	sdio_pwrseq: sdio-pwrseq {
 +		compatible = "mmc-pwrseq-simple";
 +		clocks = <&rk808 1>;
-+		clock-names = "ext_clock";
++		clock-names = "lpo";
 +		pinctrl-names = "default";
 +		pinctrl-0 = <&wifi_enable_h>;
 +		reset-gpios = <&gpio0 RK_PB2 GPIO_ACTIVE_LOW>;
@@ -264,6 +299,16 @@ index 000000000..40b1080f7
 +		vin-supply = <&vcc3v3_sys>;
 +	};
 +
++	vcca0v9_s3: vcca0v9-s3 {
++		compatible = "regulator-fixed";
++		regulator-name = "vcca0v9_s3";
++		regulator-always-on;
++		regulator-boot-on;
++		regulator-min-microvolt = <900000>;
++		regulator-max-microvolt = <900000>;
++		vin-supply = <&vcc_1v8>;
++	};
++
 +	vcc_lan: vcc-lan {
 +		compatible = "regulator-fixed";
 +		regulator-name = "vcc_lan";
@@ -282,7 +327,7 @@ index 000000000..40b1080f7
 +		regulator-always-on;
 +		regulator-boot-on;
 +		regulator-min-microvolt = <800000>;
-+		regulator-max-microvolt = <1700000>;
++		regulator-max-microvolt = <1400000>;
 +	};
 +
 +	audio_5v: audio-5v {
@@ -320,22 +365,6 @@ index 000000000..40b1080f7
 +	cpu-supply = <&vdd_cpu_b>;
 +};
 +
-+&cpu_thermal {
-+	trips {
-+		cpu_warm: cpu_warm {
-+			temperature = <55000>;
-+			hysteresis = <2000>;
-+			type = "active";
-+		};
-+
-+		cpu_hot: cpu_hot {
-+			temperature = <65000>;
-+			hysteresis = <2000>;
-+			type = "active";
-+		};
-+	};
-+};
-+
 +&emmc_phy {
 +	status = "okay";
 +};
@@ -356,7 +385,14 @@ index 000000000..40b1080f7
 +	status = "okay";
 +};
 +
++&gpu {
++	mali-supply = <&vdd_gpu>;
++	status = "okay";
++};
++
 +&hdmi {
++	avdd-0v9-supply = <&vcca0v9_s3>;
++	avdd-1v8-supply = <&vcca1v8_s3>;
 +	ddc-i2c-bus = <&i2c3>;
 +	pinctrl-names = "default";
 +	pinctrl-0 = <&hdmi_cec>;
@@ -367,16 +403,11 @@ index 000000000..40b1080f7
 +	status = "okay";
 +};
 +
-+&gpu {
-+	mali-supply = <&vdd_gpu>;
-+	status = "okay";
-+};
-+
 +&i2c0 {
-+	status = "okay";
 +	clock-frequency = <400000>;
 +	i2c-scl-rising-time-ns = <168>;
 +	i2c-scl-falling-time-ns = <4>;
++	status = "okay";
 +
 +	rk808: pmic@1b {
 +		compatible = "rockchip,rk808";
@@ -486,10 +517,10 @@ index 000000000..40b1080f7
 +				regulator-always-on;
 +				regulator-boot-on;
 +				regulator-min-microvolt = <1800000>;
-+				regulator-max-microvolt = <3000000>;
++				regulator-max-microvolt = <3300000>;
 +				regulator-state-mem {
 +					regulator-on-in-suspend;
-+					regulator-suspend-microvolt = <3000000>;
++					regulator-suspend-microvolt = <3300000>;
 +				};
 +			};
 +
@@ -544,7 +575,7 @@ index 000000000..40b1080f7
 +				regulator-always-on;
 +				regulator-boot-on;
 +				regulator-state-mem {
-+					regulator-off-in-suspend;
++					regulator-on-in-suspend;
 +				};
 +			};
 +
@@ -609,55 +640,44 @@ index 000000000..40b1080f7
 +		realtek,in1-differential;
 +		#sound-dai-cells = <0>;
 +		pinctrl-names = "default";
-+		pinctrl-0 = <&ear_ctrl_pin>;
++		pinctrl-0 = <&ear_ctrl>;
 +	};
 +};
 +
 +&i2c2 {
-+	i2c-scl-rising-time-ns = <300>;
-+	i2c-scl-falling-time-ns = <15>;
 +	status = "okay";
 +};
 +
 +&i2c3 {
-+	i2c-scl-rising-time-ns = <450>;
-+	i2c-scl-falling-time-ns = <15>;
 +	status = "okay";
 +};
 +
 +&i2c4 {
-+	i2c-scl-rising-time-ns = <600>;
-+	i2c-scl-falling-time-ns = <20>;
 +	status = "okay";
 +};
 +
 +&i2s0 {
-+	rockchip,playback-channels = <8>;
-+	rockchip,capture-channels = <8>;
++	#sound-dai-cells = <0>;
 +	status = "okay";
 +};
 +
 +&i2s1 {
 +	rockchip,playback-channels = <2>;
 +	rockchip,capture-channels = <2>;
++	#sound-dai-cells = <0>;
 +	status = "okay";
 +};
 +
 +&i2s2 {
++	#sound-dai-cells = <0>;
 +	status = "okay";
 +};
 +
 +&io_domains {
-+	status = "okay";
-+
 +	bt656-supply = <&vcc1v8_dvp>;
 +	audio-supply = <&vcca1v8_codec>;
 +	sdmmc-supply = <&vcc_sdio>;
 +	gpio1830-supply = <&vcc_3v0>;
-+};
-+
-+&pmu_io_domains {
-+	pmu1830-supply = <&vcc_1v8>;
 +	status = "okay";
 +};
 +
@@ -676,8 +696,22 @@ index 000000000..40b1080f7
 +		};
 +	};
 +
++	rt5640 {
++		ear_ctrl: ear-ctrl {
++			rockchip,pins = <4 RK_PC5 RK_FUNC_GPIO &pcfg_output_high>;
++		};
++
++		hp_det: hp-det {
++			rockchip,pins = <1 RK_PC6 RK_FUNC_GPIO &pcfg_pull_none>;
++		};
++
++		ns4258_en: ns4258-en {
++			rockchip,pins = <4 RK_PD2 RK_FUNC_GPIO &pcfg_pull_none>;
++		};
++	};
++
 +	leds {
-+		sys_led_pin: sys-led-pin {
++		sys_led: sys-led {
 +			rockchip,pins = <1 RK_PC2 RK_FUNC_GPIO &pcfg_pull_none>;
 +		};
 +	};
@@ -696,36 +730,9 @@ index 000000000..40b1080f7
 +		};
 +	};
 +
-+	sdcard {
++	sdmmc {
 +		sdmmc0_pwr_h: sdmmc0-pwr-h {
 +			rockchip,pins = <0 RK_PA1 RK_FUNC_GPIO &pcfg_pull_none>;
-+		};
-+
-+	};
-+
-+	sound {
-+		ear_ctrl_pin: ear-ctrl-pin {
-+			rockchip,pins = <4 RK_PC5 RK_FUNC_GPIO &pcfg_output_high>;
-+		};
-+
-+		hp_det_pin: hp-det-pin {
-+			rockchip,pins = <1 RK_PC6 RK_FUNC_GPIO &pcfg_pull_none>;
-+		};
-+
-+		ns4258_en: ns4258-en {
-+			rockchip,pins = <4 RK_PD2 RK_FUNC_GPIO &pcfg_pull_none>;
-+		};
-+	};
-+
-+	sdio-pwrseq {
-+		wifi_enable_h: wifi-enable-h {
-+			rockchip,pins = <0 RK_PB2 RK_FUNC_GPIO &pcfg_pull_none>;
-+		};
-+	};
-+
-+	wifi {
-+		wifi_host_wake_l: wifi-host-wake-l {
-+			rockchip,pins = <0 RK_PA3 RK_FUNC_GPIO &pcfg_pull_none>;
 +		};
 +	};
 +
@@ -734,6 +741,21 @@ index 000000000..40b1080f7
 +			rockchip,pins = <0 RK_PA5 RK_FUNC_GPIO &pcfg_pull_none>;
 +		};
 +	};
++
++	wifi {
++		wifi_enable_h: wifi-enable-h {
++			rockchip,pins = <0 RK_PB2 RK_FUNC_GPIO &pcfg_pull_none>;
++		};
++
++		wifi_host_wake_l: wifi-host-wake-l {
++			rockchip,pins = <0 RK_PA3 RK_FUNC_GPIO &pcfg_pull_none>;
++		};
++	};
++};
++
++&pmu_io_domains {
++	pmu1830-supply = <&vcc_1v8>;
++	status = "okay";
 +};
 +
 +&pwm0 {
@@ -746,6 +768,14 @@ index 000000000..40b1080f7
 +
 +&saradc {
 +	vref-supply = <&vcca1v8_s3>;
++	status = "okay";
++};
++
++&sdhci {
++	max-frequency = <150000000>;
++	bus-width = <8>;
++	mmc-hs200-1_8v;
++	non-removable;
 +	status = "okay";
 +};
 +
@@ -776,22 +806,15 @@ index 000000000..40b1080f7
 +
 +&sdmmc {
 +	bus-width = <4>;
++	cap-mmc-highspeed;
 +	cap-sd-highspeed;
 +	cd-gpios = <&gpio0 RK_PA7 GPIO_ACTIVE_LOW>;
 +	disable-wp;
 +	max-frequency = <150000000>;
 +	pinctrl-names = "default";
-+	pinctrl-0 = <&sdmmc_clk &sdmmc_cmd &sdmmc_bus4>;
++	pinctrl-0 = <&sdmmc_clk &sdmmc_cd &sdmmc_cmd &sdmmc_bus4>;
 +	vmmc-supply = <&vcc3v0_sd>;
 +	vqmmc-supply = <&vcc_sdio>;
-+	status = "okay";
-+};
-+
-+&sdhci {
-+	bus-width = <8>;
-+	mmc-hs400-1_8v;
-+	mmc-hs400-enhanced-strobe;
-+	non-removable;
 +	status = "okay";
 +};
 +
@@ -841,7 +864,7 @@ index 000000000..40b1080f7
 +	bluetooth {
 +		compatible = "brcm,bcm4345c5";
 +		clocks = <&rk808 1>;
-+		clock-names = "ext_clock";
++		clock-names = "lpo";
 +		device-wakeup-gpios = <&gpio2 RK_PD2 GPIO_ACTIVE_HIGH>;
 +		host-wakeup-gpios = <&gpio0 RK_PA4 GPIO_ACTIVE_HIGH>;
 +		shutdown-gpios = <&gpio0 RK_PB1 GPIO_ACTIVE_HIGH>;
@@ -875,8 +898,8 @@ index 000000000..40b1080f7
 +};
 +
 +&usbdrd_dwc3_0 {
-+	status = "okay";
 +	dr_mode = "host";
++	status = "okay";
 +};
 +
 +&usbdrd3_1 {
@@ -884,8 +907,8 @@ index 000000000..40b1080f7
 +};
 +
 +&usbdrd_dwc3_1 {
-+	status = "okay";
 +	dr_mode = "host";
++	status = "okay";
 +};
 +
 +&vopb {
@@ -903,6 +926,7 @@ index 000000000..40b1080f7
 +&vopl_mmu {
 +	status = "okay";
 +};
++
 diff --git a/drivers/gpu/drm/panel/Kconfig b/drivers/gpu/drm/panel/Kconfig
 index 203c0ef0b..f2713f2a7 100644
 --- a/drivers/gpu/drm/panel/Kconfig
