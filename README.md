@@ -131,13 +131,16 @@ card 1: hdmisound [hdmi-sound], device 0: ff8a0000.i2s-i2s-hifi i2s-hifi-0 [ff8a
   Subdevice #0: subdevice #0
 ```
 
-使用mplayer播放mp3来测试扬声器：
+使用mpv播放音乐来验证扬声器是否可用：
 
 ```
-mplayer -ao alsa:device=hw=rockchiprt5640c,0 test.mp3
+# 查看可使用的播放设备
+mpv --audio-device=help
+# 使用ALC5640播放
+mpv --audio-device='alsa/default:CARD=rockchiprt5640c' test.mp3
 ```
 
-如果无声音，说明ALC5640内部的音频路由错误，下面有两种方法配置音频路由
+如果无声音，可能是ALC5640内部的音频路由错误，参考下面两种方法配置音频路由
 
 ## 命令手动配置
 
