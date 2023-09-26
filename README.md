@@ -109,9 +109,9 @@ sudo cfdisk ~/myimg.img
 # 参考上面的操作，使用losetup挂载img,下载Ubuntu Ports的rootfs复制到img里，做些自定义，比较重要的有passwd sudo timezone locales hosts hostname fstab的配置
 ```
 
-# WIFI
+# WIFI和蓝牙
 
-内核需要搭配固件才能驱动AP6255，主线内核和BSP内核所使用的固件不同，但都应该将其放置到rootfs的/lib/firmware/brcm下
+确保内核配置使能`SDIO bus interface support for FullMAC driver` `HCI UART driver` `Broadcom protocol support`，将本仓库提供的固件放到文件系统的特定位置即可
 
 # 扬声器
 
