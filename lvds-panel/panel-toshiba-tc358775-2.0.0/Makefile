@@ -1,4 +1,4 @@
-KERNEL_BUILD_DIR = /lib/modules/$(shell uname -r)/build
+KERNEL_BUILD_DIR = /lib/modules/$(KERNEL_VER)/build
 PWD = $(shell pwd)
 
 obj-m += panel-toshiba-tc358775.o

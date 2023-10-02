@@ -124,9 +124,9 @@ sudo depmod -a
 # 安装工具
 sudo pacman -S dkms linux-headers gcc make
 # 将模块纳入DKMS管理，每当内核有变动时，会自动编译安装
-sudo dkms add -m panel-toshiba-tc358775 -v 2.0.0
+sudo dkms add panel-toshiba-tc358775/2.0.0
 # 不想等内核变动，立刻安装
-sudo dkms install -m panel-toshiba-tc358775 -v 2.0.0
+sudo dkms install --no-depmod panel-toshiba-tc358775/2.0.0
 ```
 
 如果想在内核启动更早时期就驱动LVDS，可以将模块添加到initramfs，操作如下
