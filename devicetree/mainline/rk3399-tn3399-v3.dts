@@ -5,8 +5,8 @@
 #include "rk3399.dtsi"
 
 / {
-	model = "TN3399_V3 Board";
-	compatible = "rockchip,tn3399_v3", "rockchip,rk3399";
+	model = "TIANNUO TN3399_V3";
+	compatible = "tiannuo,tn3399-v3", "rockchip,rk3399";
 
 	aliases {
 		mmc0 = &sdhci;

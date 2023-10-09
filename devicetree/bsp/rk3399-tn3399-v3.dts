@@ -7,8 +7,8 @@
 #include "rk3399-opp.dtsi"
 
 / {
-	model = "TN3399_V3 Board";
-	compatible = "rockchip,tn3399_v3", "rockchip,rk3399";
+	model = "TIANNUO TN3399_V3";
+	compatible = "tiannuo,tn3399-v3", "rockchip,rk3399";
 
 	chosen {
 		bootargs = "earlyprintk=uart8250,mmio32,0xff1a0000 swiotlb=1";

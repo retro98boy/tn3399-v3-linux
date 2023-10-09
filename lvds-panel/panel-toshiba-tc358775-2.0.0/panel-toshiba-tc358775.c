@@ -259,5 +259,5 @@ static struct mipi_dsi_driver tc358775_driver = {
 module_mipi_dsi_driver(tc358775_driver);
 
 MODULE_AUTHOR("retro98boy <retro98boy@qq.com>");
-MODULE_DESCRIPTION("LVDS panel driver for TN3399_V3 with TC358775");
+MODULE_DESCRIPTION("LVDS panel driver for TIANNUO TN3399_V3 with TC358775");
 MODULE_LICENSE("GPL v2");
