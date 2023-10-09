@@ -134,14 +134,14 @@
 		simple-audio-card,mclk-fs = <256>;
 		simple-audio-card,widgets =
 			"Microphone", "Internal Microphone",
-			"Headphone", "Headphone Jack",
+			"Headphone", "Headphones",
 			"Speaker", "Internal Speakers";
 		simple-audio-card,routing =
 			"Internal Microphone", "MICBIAS1",
 			"IN1P", "Internal Microphone",
 			"IN1N", "Internal Microphone",
-			"Headphone Jack", "HPOL",
-			"Headphone Jack", "HPOR",
+			"Headphones", "HPOL",
+			"Headphones", "HPOR",
 			"Internal Speakers", "SPOLP",
 			"Internal Speakers", "SPOLN",
 			"Internal Speakers", "SPORP",

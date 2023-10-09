@@ -87,14 +87,14 @@ index 00000000..16ec743c
 +		simple-audio-card,mclk-fs = <256>;
 +		simple-audio-card,widgets =
 +			"Microphone", "Internal Microphone",
-+			"Headphone", "Headphone Jack",
++			"Headphone", "Headphones",
 +			"Speaker", "Internal Speakers";
 +		simple-audio-card,routing =
 +			"Internal Microphone", "MICBIAS1",
 +			"IN1P", "Internal Microphone",
 +			"IN1N", "Internal Microphone",
-+			"Headphone Jack", "HPOL",
-+			"Headphone Jack", "HPOR",
++			"Headphones", "HPOL",
++			"Headphones", "HPOR",
 +			"NS4258 INL", "SPOLP",
 +			"NS4258 INL", "SPOLN",
 +			"NS4258 INR", "SPORP",
