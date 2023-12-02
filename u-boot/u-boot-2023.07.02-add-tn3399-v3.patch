@@ -35,7 +35,7 @@ index 00000000..c58ad95d
 +};
 diff --git a/arch/arm/dts/rk3399-tn3399-v3.dts b/arch/arm/dts/rk3399-tn3399-v3.dts
 new file mode 100644
-index 00000000..16ec743c
+index 00000000..48003d14
 --- /dev/null
 +++ b/arch/arm/dts/rk3399-tn3399-v3.dts
 @@ -0,0 +1,788 @@
@@ -829,10 +829,10 @@ index 00000000..16ec743c
 +
 diff --git a/configs/tn3399-v3-rk3399_defconfig b/configs/tn3399-v3-rk3399_defconfig
 new file mode 100644
-index 00000000..8b25e918
+index 00000000..ea34c23e
 --- /dev/null
 +++ b/configs/tn3399-v3-rk3399_defconfig
-@@ -0,0 +1,84 @@
+@@ -0,0 +1,85 @@
 +CONFIG_ARM=y
 +CONFIG_SKIP_LOWLEVEL_INIT=y
 +CONFIG_COUNTER_FREQUENCY=24000000
@@ -873,6 +873,7 @@ index 00000000..8b25e918
 +CONFIG_CMD_USB=y
 +# CONFIG_CMD_SETEXPR is not set
 +CONFIG_CMD_TIME=y
++CONFIG_CMD_SYSBOOT=y
 +CONFIG_SPL_OF_CONTROL=y
 +CONFIG_OF_SPL_REMOVE_PROPS="pinctrl-0 pinctrl-names clock-names interrupt-parent assigned-clocks assigned-clock-rates assigned-clock-parents"
 +CONFIG_ENV_IS_IN_MMC=y
