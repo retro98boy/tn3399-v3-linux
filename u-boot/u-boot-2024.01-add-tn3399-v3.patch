@@ -1,8 +1,8 @@
 diff --git a/arch/arm/dts/Makefile b/arch/arm/dts/Makefile
-index 480269fa..eed4a5b7 100644
+index 9d28a485..edb06a68 100644
 --- a/arch/arm/dts/Makefile
 +++ b/arch/arm/dts/Makefile
-@@ -163,6 +163,7 @@ dtb-$(CONFIG_ROCKCHIP_RK3399) += \
+@@ -168,6 +168,7 @@ dtb-$(CONFIG_ROCKCHIP_RK3399) += \
  	rk3399-rock-pi-4c.dtb \
  	rk3399-rock960.dtb \
  	rk3399-rockpro64.dtb \
@@ -829,10 +829,10 @@ index 00000000..48003d14
 +
 diff --git a/configs/tn3399-v3-rk3399_defconfig b/configs/tn3399-v3-rk3399_defconfig
 new file mode 100644
-index 00000000..ea34c23e
+index 00000000..48b52feb
 --- /dev/null
 +++ b/configs/tn3399-v3-rk3399_defconfig
-@@ -0,0 +1,85 @@
+@@ -0,0 +1,84 @@
 +CONFIG_ARM=y
 +CONFIG_SKIP_LOWLEVEL_INIT=y
 +CONFIG_COUNTER_FREQUENCY=24000000
@@ -865,6 +865,7 @@ index 00000000..ea34c23e
 +# CONFIG_SPL_SHARES_INIT_SP_ADDR is not set
 +CONFIG_SPL_STACK_R=y
 +CONFIG_SPL_STACK_R_MALLOC_SIMPLE_LEN=0x10000
++CONFIG_SPL_ATF_NO_PLATFORM_PARAM=y
 +CONFIG_TPL=y
 +CONFIG_CMD_BOOTZ=y
 +CONFIG_CMD_GPT=y
@@ -911,8 +912,6 @@ index 00000000..ea34c23e
 +CONFIG_USB_HOST_ETHER=y
 +CONFIG_USB_ETHER_ASIX=y
 +CONFIG_USB_ETHER_ASIX88179=y
-+CONFIG_USB_ETHER_LAN75XX=y
-+CONFIG_USB_ETHER_LAN78XX=y
 +CONFIG_USB_ETHER_MCS7830=y
 +CONFIG_USB_ETHER_RTL8152=y
 +CONFIG_USB_ETHER_SMSC95XX=y
