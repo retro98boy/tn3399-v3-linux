@@ -137,7 +137,7 @@ card 1: hdmisound [hdmi-sound], device 0: ff8a0000.i2s-i2s-hifi i2s-hifi-0 [ff8a
 # 查看可使用的播放设备
 mpv --audio-device=help
 # 使用ALC5640播放
-mpv --audio-device='alsa/default:CARD=rockchiprt5640c' test.mp3
+mpv --audio-device='alsa/default:CARD=rockchiprt5640c' --no-video test.mp3
 ```
 
 如果无声音，可能是ALC5640内部的音频路由错误，参考下面两种方法配置音频路由
