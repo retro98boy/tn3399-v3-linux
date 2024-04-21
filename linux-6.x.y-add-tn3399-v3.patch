@@ -1,8 +1,8 @@
 diff --git a/arch/arm64/boot/dts/rockchip/Makefile b/arch/arm64/boot/dts/rockchip/Makefile
-index b7fb908eb..b549755c5 100644
+index a7b30e11b..9593daf02 100644
 --- a/arch/arm64/boot/dts/rockchip/Makefile
 +++ b/arch/arm64/boot/dts/rockchip/Makefile
-@@ -68,6 +68,8 @@ dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3399-rockpro64-v2.dtb
+@@ -70,6 +70,8 @@ dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3399-rockpro64-v2.dtb
  dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3399-rockpro64.dtb
  dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3399-sapphire.dtb
  dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3399-sapphire-excavator.dtb
@@ -135,15 +135,16 @@ index 000000000..f2bda20a1
 +
 diff --git a/arch/arm64/boot/dts/rockchip/rk3399-tn3399-v3.dts b/arch/arm64/boot/dts/rockchip/rk3399-tn3399-v3.dts
 new file mode 100644
-index 000000000..16ec743c1
+index 000000000..112df5d39
 --- /dev/null
 +++ b/arch/arm64/boot/dts/rockchip/rk3399-tn3399-v3.dts
-@@ -0,0 +1,788 @@
+@@ -0,0 +1,806 @@
 +/dts-v1/;
 +
 +#include <dt-bindings/input/linux-event-codes.h>
 +#include <dt-bindings/pwm/pwm.h>
 +#include "rk3399.dtsi"
++#include "rk3399-op1-opp.dtsi"
 +
 +/ {
 +	model = "TIANNUO TN3399_V3";
@@ -370,19 +371,30 @@ index 000000000..16ec743c1
 +};
 +
 +&gmac {
-+	assigned-clocks = <&cru SCLK_RMII_SRC>;
 +	assigned-clock-parents = <&clkin_gmac>;
++	assigned-clocks = <&cru SCLK_RMII_SRC>;
 +	clock_in_out = "input";
-+	phy-supply = <&vcc_lan>;
-+	phy-mode = "rgmii";
 +	pinctrl-names = "default";
-+	pinctrl-0 = <&rgmii_pins>;
-+	snps,reset-gpio = <&gpio3 RK_PB7 GPIO_ACTIVE_LOW>;
-+	snps,reset-active-low;
-+	snps,reset-delays-us = <0 10000 50000>;
++	pinctrl-0 = <&rgmii_pins>, <&phy_rst_l>;
++	phy-handle = <&rtl8211e>;
++	phy-mode = "rgmii";
++	phy-supply = <&vcc_lan>;
 +	tx_delay = <0x28>;
 +	rx_delay = <0x11>;
 +	status = "okay";
++
++	mdio {
++		compatible = "snps,dwmac-mdio";
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		rtl8211e: ethernet-phy@0 {
++			reg = <0>;
++			reset-assert-us = <10000>;
++			reset-deassert-us = <30000>;
++			reset-gpios = <&gpio3 RK_PB7 GPIO_ACTIVE_LOW>;
++		};
++	};
 +};
 +
 +&gpu {
@@ -575,7 +587,7 @@ index 000000000..16ec743c1
 +				regulator-always-on;
 +				regulator-boot-on;
 +				regulator-state-mem {
-+					regulator-on-in-suspend;
++					regulator-off-in-suspend;
 +				};
 +			};
 +
@@ -682,6 +694,12 @@ index 000000000..16ec743c1
 +};
 +
 +&pinctrl {
++	gmac {
++		phy_rst_l: phy-rst-l {
++			rockchip,pins = <3 RK_PB7 RK_FUNC_GPIO &pcfg_pull_none>;
++		};
++	};
++
 +	bt {
 +		bt_enable_h: bt-enable-h {
 +			rockchip,pins = <0 RK_PB1 RK_FUNC_GPIO &pcfg_pull_none>;
@@ -928,10 +946,10 @@ index 000000000..16ec743c1
 +};
 +
 diff --git a/drivers/gpu/drm/panel/Kconfig b/drivers/gpu/drm/panel/Kconfig
-index 203c0ef0b..f2713f2a7 100644
+index 8f3783742..8a38f85ba 100644
 --- a/drivers/gpu/drm/panel/Kconfig
 +++ b/drivers/gpu/drm/panel/Kconfig
-@@ -812,4 +812,13 @@ config DRM_PANEL_XINPENG_XPP055C272
+@@ -884,4 +884,13 @@ config DRM_PANEL_XINPENG_XPP055C272
  	  Say Y here if you want to enable support for the Xinpeng
  	  XPP055C272 controller for 720x1280 LCD panels with MIPI/RGB/SPI
  	  system interfaces.
@@ -946,17 +964,17 @@ index 203c0ef0b..f2713f2a7 100644
 +	  panel as found in TIANNUO TN3399_V3.
  endmenu
 diff --git a/drivers/gpu/drm/panel/Makefile b/drivers/gpu/drm/panel/Makefile
-index 30cf553c8..037bb5170 100644
+index d94a644d0..d36322dc0 100644
 --- a/drivers/gpu/drm/panel/Makefile
 +++ b/drivers/gpu/drm/panel/Makefile
-@@ -83,3 +83,4 @@ obj-$(CONFIG_DRM_PANEL_VISIONOX_RM69299) += panel-visionox-rm69299.o
- obj-$(CONFIG_DRM_PANEL_VISIONOX_VTDR6130) += panel-visionox-vtdr6130.o
+@@ -90,3 +90,4 @@ obj-$(CONFIG_DRM_PANEL_VISIONOX_VTDR6130) += panel-visionox-vtdr6130.o
+ obj-$(CONFIG_DRM_PANEL_VISIONOX_R66451) += panel-visionox-r66451.o
  obj-$(CONFIG_DRM_PANEL_WIDECHIPS_WS2401) += panel-widechips-ws2401.o
  obj-$(CONFIG_DRM_PANEL_XINPENG_XPP055C272) += panel-xinpeng-xpp055c272.o
 +obj-$(CONFIG_DRM_PANEL_TOSHIBA_TC358775) += panel-toshiba-tc358775.o
 diff --git a/drivers/gpu/drm/panel/panel-toshiba-tc358775.c b/drivers/gpu/drm/panel/panel-toshiba-tc358775.c
 new file mode 100644
-index 000000000..588c62556
+index 000000000..e75c103d4
 --- /dev/null
 +++ b/drivers/gpu/drm/panel/panel-toshiba-tc358775.c
 @@ -0,0 +1,263 @@

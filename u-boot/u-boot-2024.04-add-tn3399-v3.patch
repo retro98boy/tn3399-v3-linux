@@ -1,8 +1,8 @@
 diff --git a/arch/arm/dts/Makefile b/arch/arm/dts/Makefile
-index 9d28a485..edb06a68 100644
+index b102ffb5..cf7cae0a 100644
 --- a/arch/arm/dts/Makefile
 +++ b/arch/arm/dts/Makefile
-@@ -168,6 +168,7 @@ dtb-$(CONFIG_ROCKCHIP_RK3399) += \
+@@ -170,6 +170,7 @@ dtb-$(CONFIG_ROCKCHIP_RK3399) += \
  	rk3399-rock-pi-4c.dtb \
  	rk3399-rock960.dtb \
  	rk3399-rockpro64.dtb \
@@ -35,15 +35,16 @@ index 00000000..c58ad95d
 +};
 diff --git a/arch/arm/dts/rk3399-tn3399-v3.dts b/arch/arm/dts/rk3399-tn3399-v3.dts
 new file mode 100644
-index 00000000..48003d14
+index 00000000..112df5d3
 --- /dev/null
 +++ b/arch/arm/dts/rk3399-tn3399-v3.dts
-@@ -0,0 +1,788 @@
+@@ -0,0 +1,806 @@
 +/dts-v1/;
 +
 +#include <dt-bindings/input/linux-event-codes.h>
 +#include <dt-bindings/pwm/pwm.h>
 +#include "rk3399.dtsi"
++#include "rk3399-op1-opp.dtsi"
 +
 +/ {
 +	model = "TIANNUO TN3399_V3";
@@ -270,19 +271,30 @@ index 00000000..48003d14
 +};
 +
 +&gmac {
-+	assigned-clocks = <&cru SCLK_RMII_SRC>;
 +	assigned-clock-parents = <&clkin_gmac>;
++	assigned-clocks = <&cru SCLK_RMII_SRC>;
 +	clock_in_out = "input";
-+	phy-supply = <&vcc_lan>;
-+	phy-mode = "rgmii";
 +	pinctrl-names = "default";
-+	pinctrl-0 = <&rgmii_pins>;
-+	snps,reset-gpio = <&gpio3 RK_PB7 GPIO_ACTIVE_LOW>;
-+	snps,reset-active-low;
-+	snps,reset-delays-us = <0 10000 50000>;
++	pinctrl-0 = <&rgmii_pins>, <&phy_rst_l>;
++	phy-handle = <&rtl8211e>;
++	phy-mode = "rgmii";
++	phy-supply = <&vcc_lan>;
 +	tx_delay = <0x28>;
 +	rx_delay = <0x11>;
 +	status = "okay";
++
++	mdio {
++		compatible = "snps,dwmac-mdio";
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		rtl8211e: ethernet-phy@0 {
++			reg = <0>;
++			reset-assert-us = <10000>;
++			reset-deassert-us = <30000>;
++			reset-gpios = <&gpio3 RK_PB7 GPIO_ACTIVE_LOW>;
++		};
++	};
 +};
 +
 +&gpu {
@@ -475,7 +487,7 @@ index 00000000..48003d14
 +				regulator-always-on;
 +				regulator-boot-on;
 +				regulator-state-mem {
-+					regulator-on-in-suspend;
++					regulator-off-in-suspend;
 +				};
 +			};
 +
@@ -582,6 +594,12 @@ index 00000000..48003d14
 +};
 +
 +&pinctrl {
++	gmac {
++		phy_rst_l: phy-rst-l {
++			rockchip,pins = <3 RK_PB7 RK_FUNC_GPIO &pcfg_pull_none>;
++		};
++	};
++
 +	bt {
 +		bt_enable_h: bt-enable-h {
 +			rockchip,pins = <0 RK_PB1 RK_FUNC_GPIO &pcfg_pull_none>;
@@ -829,10 +847,11 @@ index 00000000..48003d14
 +
 diff --git a/configs/tn3399-v3-rk3399_defconfig b/configs/tn3399-v3-rk3399_defconfig
 new file mode 100644
-index 00000000..48b52feb
+index 00000000..cd9d34c3
 --- /dev/null
 +++ b/configs/tn3399-v3-rk3399_defconfig
-@@ -0,0 +1,84 @@
+@@ -0,0 +1,85 @@
++# Reference from firefly-rk3399_defconfig
 +CONFIG_ARM=y
 +CONFIG_SKIP_LOWLEVEL_INIT=y
 +CONFIG_COUNTER_FREQUENCY=24000000
