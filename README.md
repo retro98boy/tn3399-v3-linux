@@ -72,11 +72,11 @@ BSP内核推荐[mrfixit2001](https://github.com/mrfixit2001/rockchip-kernel)维�
 
 举例
 
-下载rockpro64的[Manjaro-ARM](https://github.com/manjaro-arm/rockpro64-images)系统镜像，使用losetup挂载img到临时目录
+下载nanopim4v2的[Armbian](https://mirrors.ustc.edu.cn/armbian-dl/nanopim4v2/archive/)系统镜像，使用losetup挂载img到临时目录
 
 替换dtb为TN3399_V3
 
-进行自定义，例如使用neovim代替nano，卸载ntfs-3g而使用ntfs3，卸载rockpro64的U-Boot包
+进行自定义，例如使用neovim代替nano，卸载ntfs-3g而使用ntfs3，卸载nanopim4v2的U-Boot包
 
 最后将TN3399_V3的U-Boot刻录到镜像上
 
@@ -99,8 +99,7 @@ sudo systemd-nspawn -D /mnt -M tmp bash
 sudo umount -R /mnt
 # 删除loop设备
 sudo losetup -d /dev/loop0
-# 给img烧录U-Boot，不同SoC厂商的启动偏移地址不一样
-sudo dd if=path_to_uboot of=path_to_your_img bs=1k seek=32 conv=notrunc
+# 参考上文给img烧录U-Boot
 ```
 
 ## 从零构建系统镜像
@@ -198,8 +197,6 @@ conf文件在仓库的sound目录下
 如果系统不存在`/usr/share/alsa/ucm2/conf.d/simple-card`可以安装alsa-ucm-conf：
 
 ```
-# Manjaro-ARM
-sudo pacman -S alsa-ucm-conf
 # Armbian
 sudo apt install alsa-ucm-conf
 ```

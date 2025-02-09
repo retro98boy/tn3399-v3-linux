@@ -94,19 +94,19 @@ Device Drivers -> Graphics support -> Display Panels -> TOSHIBA TC358775 panel d
 
 ~~在Armbian系统中没有找到和运行内核匹配的build source（包含内核头文件、和系统相同的Kconfig配置、一些符号文件），使用`apt search rockchip64 source`只能找到旧内核的镜像和build source，所以使用Armbian驱动屏幕，只能自己编译内核或者使用apt回退内核版本~~
 
-这里以Manjaro-ARM举例
+这里以Armbian举例
 
-先将Manjaro-ARM系统的设备树替换成仓库中的rk3399-tn3399-v3-with-1024x600-single-8bit-lvds-panel.dtb
+先将Armbian系统的设备树替换成仓库中的rk3399-tn3399-v3-with-1024x600-single-8bit-lvds-panel.dtb
 
-使用`sudo pacman -Syyu`将所有包更新，如果内核有更新，最好重启
+使用`sudo apt update && sudo apt upgrade`将所有包更新，如果内核有更新，最好重启
 
 接着安装内核source和编译工具：
 
 ```
-sudo pacman -S linux-headers gcc make
+sudo apt install linux-headers-current-rockchip64 gcc make
 ```
 
-将仓库中的panel-toshiba-tc358775-2.0.0目录上传到Manjaro-ARM中，执行：
+将仓库中的panel-toshiba-tc358775-2.0.0目录上传到Armbian中，执行：
 
 ```
 make -j6
@@ -122,16 +122,14 @@ sudo depmod -a
 
 ```
 # 安装工具
-sudo pacman -S dkms linux-headers gcc make
+sudo apt install dkms linux-headers-current-rockchip64 gcc make
 # 将模块纳入DKMS管理，每当内核有变动时，会自动编译安装
 sudo dkms add panel-toshiba-tc358775/2.0.0
 # 不想等内核变动，立刻安装
 sudo dkms install --no-depmod panel-toshiba-tc358775/2.0.0
 ```
 
-如果想在内核启动更早时期就驱动LVDS，可以将模块添加到initramfs，操作如下
-
-编辑/etc/mkinitcpio.conf，在MODULES中添加一项panel-toshiba-tc358775，例如`MODULES=(rtc_rk808 rockchipdrm panel-toshiba-tc358775)`，这样每次更新initramfs时会自动将该模块包含进去，手动更新initramfs的命令为`sudo mkinitcpio -p linux`
+如果想在内核启动更早时期就驱动LVDS，可以将模块添加到initramfs，自行Google操作办法
 
 # 为其他屏幕适配驱动
 
