@@ -3,7 +3,7 @@
 #include "rk3399-tn3399-v3-with-lvds-panel.dtsi"
 
 / {
-	vcc_panel: vcc-panel {
+	vcc_panel: regulator-vcc-panel {
 		regulator-min-microvolt = <3300000>;
 		regulator-max-microvolt = <3300000>;
 		vin-supply = <&vcc3v3_sys>;

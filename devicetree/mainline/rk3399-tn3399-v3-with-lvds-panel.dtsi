@@ -43,7 +43,7 @@
 		default-brightness-level = <200>;
 	};
 
-	vcc_panel: vcc-panel {
+	vcc_panel: regulator-vcc-panel {
 		compatible = "regulator-fixed";
 		enable-active-high;
 		gpio = <&gpio1 RK_PA4 GPIO_ACTIVE_HIGH>;

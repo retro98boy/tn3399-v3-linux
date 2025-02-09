@@ -1,19 +1,19 @@
 diff --git a/arch/arm64/boot/dts/rockchip/Makefile b/arch/arm64/boot/dts/rockchip/Makefile
-index a7b30e11b..9593daf02 100644
+index 86cc418a2..d479edf0b 100644
 --- a/arch/arm64/boot/dts/rockchip/Makefile
 +++ b/arch/arm64/boot/dts/rockchip/Makefile
-@@ -70,6 +70,8 @@ dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3399-rockpro64-v2.dtb
+@@ -76,6 +76,8 @@ dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3399-rockpro64-v2.dtb
  dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3399-rockpro64.dtb
  dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3399-sapphire.dtb
  dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3399-sapphire-excavator.dtb
 +dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3399-tn3399-v3.dtb
 +dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3399-tn3399-v3-with-1024x600-single-8bit-lvds-panel.dtb
  dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3399pro-rock-pi-n10.dtb
- dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3566-anbernic-rg353p.dtb
- dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3566-anbernic-rg353ps.dtb
+ dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3528-radxa-e20c.dtb
+ dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3566-anbernic-rg-arc-d.dtb
 diff --git a/arch/arm64/boot/dts/rockchip/rk3399-tn3399-v3-with-1024x600-single-8bit-lvds-panel.dts b/arch/arm64/boot/dts/rockchip/rk3399-tn3399-v3-with-1024x600-single-8bit-lvds-panel.dts
 new file mode 100644
-index 000000000..c75954305
+index 000000000..2e7e95e86
 --- /dev/null
 +++ b/arch/arm64/boot/dts/rockchip/rk3399-tn3399-v3-with-1024x600-single-8bit-lvds-panel.dts
 @@ -0,0 +1,18 @@
@@ -22,7 +22,7 @@ index 000000000..c75954305
 +#include "rk3399-tn3399-v3-with-lvds-panel.dtsi"
 +
 +/ {
-+	vcc_panel: vcc-panel {
++	vcc_panel: regulator-vcc-panel {
 +		regulator-min-microvolt = <3300000>;
 +		regulator-max-microvolt = <3300000>;
 +		vin-supply = <&vcc3v3_sys>;
@@ -37,7 +37,7 @@ index 000000000..c75954305
 +
 diff --git a/arch/arm64/boot/dts/rockchip/rk3399-tn3399-v3-with-lvds-panel.dtsi b/arch/arm64/boot/dts/rockchip/rk3399-tn3399-v3-with-lvds-panel.dtsi
 new file mode 100644
-index 000000000..f2bda20a1
+index 000000000..3754d481d
 --- /dev/null
 +++ b/arch/arm64/boot/dts/rockchip/rk3399-tn3399-v3-with-lvds-panel.dtsi
 @@ -0,0 +1,92 @@
@@ -86,7 +86,7 @@ index 000000000..f2bda20a1
 +		default-brightness-level = <200>;
 +	};
 +
-+	vcc_panel: vcc-panel {
++	vcc_panel: regulator-vcc-panel {
 +		compatible = "regulator-fixed";
 +		enable-active-high;
 +		gpio = <&gpio1 RK_PA4 GPIO_ACTIVE_HIGH>;
@@ -135,7 +135,7 @@ index 000000000..f2bda20a1
 +
 diff --git a/arch/arm64/boot/dts/rockchip/rk3399-tn3399-v3.dts b/arch/arm64/boot/dts/rockchip/rk3399-tn3399-v3.dts
 new file mode 100644
-index 000000000..112df5d39
+index 000000000..5b93d153c
 --- /dev/null
 +++ b/arch/arm64/boot/dts/rockchip/rk3399-tn3399-v3.dts
 @@ -0,0 +1,806 @@
@@ -144,13 +144,13 @@ index 000000000..112df5d39
 +#include <dt-bindings/input/linux-event-codes.h>
 +#include <dt-bindings/pwm/pwm.h>
 +#include "rk3399.dtsi"
-+#include "rk3399-op1-opp.dtsi"
 +
 +/ {
 +	model = "TIANNUO TN3399_V3";
 +	compatible = "tiannuo,tn3399-v3", "rockchip,rk3399";
 +
 +	aliases {
++		ethernet0 = &gmac;
 +		mmc0 = &sdhci;
 +		mmc1 = &sdmmc;
 +		mmc2 = &sdio0;
@@ -233,7 +233,7 @@ index 000000000..112df5d39
 +		reset-gpios = <&gpio0 RK_PB2 GPIO_ACTIVE_LOW>;
 +	};
 +
-+	dc12v: dc12v {
++	dc12v: regulator-dc12v {
 +		compatible = "regulator-fixed";
 +		regulator-name = "dc12v";
 +		regulator-always-on;
@@ -242,7 +242,7 @@ index 000000000..112df5d39
 +		regulator-max-microvolt = <12000000>;
 +	};
 +
-+	vcc5v0_sys: vcc5v0-sys {
++	vcc5v0_sys: regulator-vcc5v0-sys {
 +		compatible = "regulator-fixed";
 +		regulator-name = "vcc5v0_sys";
 +		regulator-always-on;
@@ -252,7 +252,7 @@ index 000000000..112df5d39
 +		vin-supply = <&dc12v>;
 +	};
 +
-+	usb_vbus: usb-vbus {
++	usb_vbus: regulator-usb-vbus {
 +		compatible = "regulator-fixed";
 +		enable-active-high;
 +		gpio = <&gpio0 RK_PA5 GPIO_ACTIVE_HIGH>;
@@ -266,7 +266,7 @@ index 000000000..112df5d39
 +		vin-supply = <&vcc5v0_sys>;
 +	};
 +
-+	vcc3v3_sys: vcc3v3-sys {
++	vcc3v3_sys: regulator-vcc3v3-sys {
 +		compatible = "regulator-fixed";
 +		regulator-name = "vcc3v3_sys";
 +		regulator-always-on;
@@ -276,7 +276,7 @@ index 000000000..112df5d39
 +		vin-supply = <&dc12v>;
 +	};
 +
-+	vcc3v0_sd: vcc3v0-sd {
++	vcc3v0_sd: regulator-vcc3v0-sd {
 +		compatible = "regulator-fixed";
 +		enable-active-high;
 +		gpio = <&gpio0 RK_PA1 GPIO_ACTIVE_HIGH>;
@@ -290,7 +290,7 @@ index 000000000..112df5d39
 +		vin-supply = <&vcc3v3_sys>;
 +	};
 +
-+	vcca1v8_s3: vcca1v8-s3 {
++	vcca1v8_s3: regulator-vcca1v8-s3 {
 +		compatible = "regulator-fixed";
 +		regulator-name = "vcca1v8_s3";
 +		regulator-always-on;
@@ -300,7 +300,7 @@ index 000000000..112df5d39
 +		vin-supply = <&vcc3v3_sys>;
 +	};
 +
-+	vcca0v9_s3: vcca0v9-s3 {
++	vcca0v9_s3: regulator-vcca0v9-s3 {
 +		compatible = "regulator-fixed";
 +		regulator-name = "vcca0v9_s3";
 +		regulator-always-on;
@@ -310,7 +310,7 @@ index 000000000..112df5d39
 +		vin-supply = <&vcc_1v8>;
 +	};
 +
-+	vcc_lan: vcc-lan {
++	vcc_lan: regulator-vcc-lan {
 +		compatible = "regulator-fixed";
 +		regulator-name = "vcc_lan";
 +		regulator-always-on;
@@ -320,7 +320,7 @@ index 000000000..112df5d39
 +		vin-supply = <&vcc3v3_sys>;
 +	};
 +
-+	vdd_log: vdd-log {
++	vdd_log: regulator-vdd-log {
 +		compatible = "pwm-regulator";
 +		pwms = <&pwm2 0 25000 1>;
 +		pwm-supply = <&vcc3v3_sys>;
@@ -331,7 +331,7 @@ index 000000000..112df5d39
 +		regulator-max-microvolt = <1400000>;
 +	};
 +
-+	audio_5v: audio-5v {
++	audio_5v: regulator-audio-5v {
 +		compatible = "regulator-fixed";
 +		regulator-name = "audio_5v";
 +		regulator-always-on;
@@ -430,7 +430,7 @@ index 000000000..112df5d39
 +		clock-output-names = "xin32k", "rk808-clkout2";
 +		pinctrl-names = "default";
 +		pinctrl-0 = <&pmic_int_l>;
-+		rockchip,system-power-controller;
++		system-power-controller;
 +		wakeup-source;
 +
 +		vcc1-supply = <&vcc3v3_sys>;
@@ -946,10 +946,10 @@ index 000000000..112df5d39
 +};
 +
 diff --git a/drivers/gpu/drm/panel/Kconfig b/drivers/gpu/drm/panel/Kconfig
-index 8f3783742..8a38f85ba 100644
+index d7469c565..f3ab4bc1b 100644
 --- a/drivers/gpu/drm/panel/Kconfig
 +++ b/drivers/gpu/drm/panel/Kconfig
-@@ -884,4 +884,13 @@ config DRM_PANEL_XINPENG_XPP055C272
+@@ -1024,4 +1024,13 @@ config DRM_PANEL_XINPENG_XPP055C272
  	  Say Y here if you want to enable support for the Xinpeng
  	  XPP055C272 controller for 720x1280 LCD panels with MIPI/RGB/SPI
  	  system interfaces.
@@ -964,10 +964,10 @@ index 8f3783742..8a38f85ba 100644
 +	  panel as found in TIANNUO TN3399_V3.
  endmenu
 diff --git a/drivers/gpu/drm/panel/Makefile b/drivers/gpu/drm/panel/Makefile
-index d94a644d0..d36322dc0 100644
+index 7dcf72646..e18a1faa2 100644
 --- a/drivers/gpu/drm/panel/Makefile
 +++ b/drivers/gpu/drm/panel/Makefile
-@@ -90,3 +90,4 @@ obj-$(CONFIG_DRM_PANEL_VISIONOX_VTDR6130) += panel-visionox-vtdr6130.o
+@@ -104,3 +104,4 @@ obj-$(CONFIG_DRM_PANEL_VISIONOX_VTDR6130) += panel-visionox-vtdr6130.o
  obj-$(CONFIG_DRM_PANEL_VISIONOX_R66451) += panel-visionox-r66451.o
  obj-$(CONFIG_DRM_PANEL_WIDECHIPS_WS2401) += panel-widechips-ws2401.o
  obj-$(CONFIG_DRM_PANEL_XINPENG_XPP055C272) += panel-xinpeng-xpp055c272.o
