@@ -4,16 +4,32 @@
 
 ## 编译ATF
 
+### BL31
+
 下载[源码](https://github.com/ARM-software/arm-trusted-firmware/tags)并解压，编译:
 
 ```
-make CROSS_COMPILE=aarch64-linux-gnu- PLAT=rk3399
+make CROSS_COMPILE=aarch64-linux-gnu- PLAT=rk3399 -j16
 ```
 
 编译成功后设置环境变量：
 
 ```
-export BL31=path_to_your_bl31.elf
+export BL31=arm-trusted-firmware目录/build/rk3399/release/bl31/bl31.elf
+```
+
+### OP-TEE（可选）
+
+下载[源码](https://github.com/OP-TEE/optee_os/tags)并解压，编译:
+
+```
+make PLATFORM=rockchip-rk3399 -j16
+```
+
+编译成功后设置环境变量：
+
+```
+export TEE=optee目录/out/arm-plat-rockchip/core/tee.bin
 ```
 
 ## 编译U-Boot
