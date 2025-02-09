@@ -217,7 +217,7 @@ PS：这里的clock即pixel clock，等于h_total * v_total * fps = (1024 + 156 
 
 - 修改驱动文件并make && sudo make install后，重新开机修改未生效
 
-执行`sudo mkinitcpio -p linux`（Debian系是update-initramfs命令）将新的驱动模块更新到initramfs中，每次开机使用的都是initramfs中的驱动模块，不会使用rootfs中的
+执行`update-initramfs`将新的驱动模块更新到initramfs中，每次开机使用的都是initramfs中的驱动模块，不会使用rootfs中的
 
 - 显示内容超出实际屏幕或者屏幕有黑边
 
