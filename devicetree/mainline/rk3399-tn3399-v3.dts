@@ -26,13 +26,13 @@
 		#clock-cells = <0>;
 	};
 
-	leds {
+	gpio-leds {
 		compatible = "gpio-leds";
 		pinctrl-names = "default";
 		pinctrl-0 = <&sys_led>;
 
 		sys-led {
-			label = "sys";
+			label = "sys-led";
 			gpios = <&gpio1 RK_PC2 GPIO_ACTIVE_LOW>;
 			linux,default-trigger = "heartbeat";
 		};
