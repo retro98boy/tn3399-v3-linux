@@ -94,10 +94,10 @@ index 00000000..c9effb6b
 +CONFIG_ERRNO_STR=y
 diff --git a/dts/upstream/src/arm64/rockchip/rk3399-tn3399-v3.dts b/dts/upstream/src/arm64/rockchip/rk3399-tn3399-v3.dts
 new file mode 100644
-index 00000000..fe4cab67
+index 00000000..fc49471e
 --- /dev/null
 +++ b/dts/upstream/src/arm64/rockchip/rk3399-tn3399-v3.dts
-@@ -0,0 +1,807 @@
+@@ -0,0 +1,806 @@
 +/dts-v1/;
 +
 +#include <dt-bindings/input/linux-event-codes.h>
@@ -127,13 +127,13 @@ index 00000000..fe4cab67
 +		#clock-cells = <0>;
 +	};
 +
-+	leds {
++	gpio-leds {
 +		compatible = "gpio-leds";
 +		pinctrl-names = "default";
 +		pinctrl-0 = <&sys_led>;
 +
 +		sys-led {
-+			label = "sys";
++			label = "sys-led";
 +			gpios = <&gpio1 RK_PC2 GPIO_ACTIVE_LOW>;
 +			linux,default-trigger = "heartbeat";
 +		};
@@ -193,7 +193,7 @@ index 00000000..fe4cab67
 +		reset-gpios = <&gpio0 RK_PB2 GPIO_ACTIVE_LOW>;
 +	};
 +
-+	dc12v: dc12v {
++	dc12v: regulator-dc12v {
 +		compatible = "regulator-fixed";
 +		regulator-name = "dc12v";
 +		regulator-always-on;
@@ -202,7 +202,7 @@ index 00000000..fe4cab67
 +		regulator-max-microvolt = <12000000>;
 +	};
 +
-+	vcc5v0_sys: vcc5v0-sys {
++	vcc5v0_sys: regulator-vcc5v0-sys {
 +		compatible = "regulator-fixed";
 +		regulator-name = "vcc5v0_sys";
 +		regulator-always-on;
@@ -212,7 +212,7 @@ index 00000000..fe4cab67
 +		vin-supply = <&dc12v>;
 +	};
 +
-+	usb_vbus: usb-vbus {
++	usb_vbus: regulator-usb-vbus {
 +		compatible = "regulator-fixed";
 +		enable-active-high;
 +		gpio = <&gpio0 RK_PA5 GPIO_ACTIVE_HIGH>;
@@ -226,7 +226,7 @@ index 00000000..fe4cab67
 +		vin-supply = <&vcc5v0_sys>;
 +	};
 +
-+	vcc3v3_sys: vcc3v3-sys {
++	vcc3v3_sys: regulator-vcc3v3-sys {
 +		compatible = "regulator-fixed";
 +		regulator-name = "vcc3v3_sys";
 +		regulator-always-on;
@@ -236,7 +236,7 @@ index 00000000..fe4cab67
 +		vin-supply = <&dc12v>;
 +	};
 +
-+	vcc3v0_sd: vcc3v0-sd {
++	vcc3v0_sd: regulator-vcc3v0-sd {
 +		compatible = "regulator-fixed";
 +		enable-active-high;
 +		gpio = <&gpio0 RK_PA1 GPIO_ACTIVE_HIGH>;
@@ -250,7 +250,7 @@ index 00000000..fe4cab67
 +		vin-supply = <&vcc3v3_sys>;
 +	};
 +
-+	vcca1v8_s3: vcca1v8-s3 {
++	vcca1v8_s3: regulator-vcca1v8-s3 {
 +		compatible = "regulator-fixed";
 +		regulator-name = "vcca1v8_s3";
 +		regulator-always-on;
@@ -260,7 +260,7 @@ index 00000000..fe4cab67
 +		vin-supply = <&vcc3v3_sys>;
 +	};
 +
-+	vcca0v9_s3: vcca0v9-s3 {
++	vcca0v9_s3: regulator-vcca0v9-s3 {
 +		compatible = "regulator-fixed";
 +		regulator-name = "vcca0v9_s3";
 +		regulator-always-on;
@@ -270,7 +270,7 @@ index 00000000..fe4cab67
 +		vin-supply = <&vcc_1v8>;
 +	};
 +
-+	vcc_lan: vcc-lan {
++	vcc_lan: regulator-vcc-lan {
 +		compatible = "regulator-fixed";
 +		regulator-name = "vcc_lan";
 +		regulator-always-on;
@@ -280,7 +280,7 @@ index 00000000..fe4cab67
 +		vin-supply = <&vcc3v3_sys>;
 +	};
 +
-+	vdd_log: vdd-log {
++	vdd_log: regulator-vdd-log {
 +		compatible = "pwm-regulator";
 +		pwms = <&pwm2 0 25000 1>;
 +		pwm-supply = <&vcc3v3_sys>;
@@ -291,7 +291,7 @@ index 00000000..fe4cab67
 +		regulator-max-microvolt = <1400000>;
 +	};
 +
-+	audio_5v: audio-5v {
++	audio_5v: regulator-audio-5v {
 +		compatible = "regulator-fixed";
 +		regulator-name = "audio_5v";
 +		regulator-always-on;
@@ -491,8 +491,7 @@ index 00000000..fe4cab67
 +				regulator-min-microvolt = <1800000>;
 +				regulator-max-microvolt = <3300000>;
 +				regulator-state-mem {
-+					regulator-on-in-suspend;
-+					regulator-suspend-microvolt = <3300000>;
++					regulator-off-in-suspend;
 +				};
 +			};
 +
@@ -514,8 +513,7 @@ index 00000000..fe4cab67
 +				regulator-min-microvolt = <1500000>;
 +				regulator-max-microvolt = <1500000>;
 +				regulator-state-mem {
-+					regulator-on-in-suspend;
-+					regulator-suspend-microvolt = <1500000>;
++					regulator-off-in-suspend;
 +				};
 +			};
 +
@@ -537,8 +535,7 @@ index 00000000..fe4cab67
 +				regulator-min-microvolt = <3000000>;
 +				regulator-max-microvolt = <3000000>;
 +				regulator-state-mem {
-+					regulator-on-in-suspend;
-+					regulator-suspend-microvolt = <3000000>;
++					regulator-off-in-suspend;
 +				};
 +			};
 +
@@ -547,7 +544,7 @@ index 00000000..fe4cab67
 +				regulator-always-on;
 +				regulator-boot-on;
 +				regulator-state-mem {
-+					regulator-off-in-suspend;
++					regulator-on-in-suspend;
 +				};
 +			};
 +
@@ -752,7 +749,8 @@ index 00000000..fe4cab67
 +&sdhci {
 +	max-frequency = <150000000>;
 +	bus-width = <8>;
-+	mmc-hs200-1_8v;
++	mmc-hs400-1_8v;
++	mmc-hs400-enhanced-strobe;
 +	non-removable;
 +	status = "okay";
 +};
@@ -793,6 +791,7 @@ index 00000000..fe4cab67
 +	pinctrl-0 = <&sdmmc_clk &sdmmc_cd &sdmmc_cmd &sdmmc_bus4>;
 +	vmmc-supply = <&vcc3v0_sd>;
 +	vqmmc-supply = <&vcc_sdio>;
++	sd-uhs-sdr104;
 +	status = "okay";
 +};
 +
