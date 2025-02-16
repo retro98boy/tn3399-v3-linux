@@ -70,7 +70,7 @@ TC358775的LVDS输出时钟可以选择接外部晶振，或者从输入的DSI�
 
 ## 添加进内核源码
 
-下载主线内核源码，添加dts和TC358775驱动（参考linux-6.x.y-add-tn3399-v3.patch），配置内核选项时勾选上：
+下载主线内核源码，添加dts和TC358775驱动（参考本仓库中的linux-add-tc358775-panel-driver.patch），配置内核选项时勾选上：
 
 ```
 Device Drivers -> Graphics support -> Display Panels -> TOSHIBA TC358775 panel driver
@@ -79,10 +79,9 @@ Device Drivers -> Graphics support -> Display Panels -> TOSHIBA TC358775 panel d
 编译完成后：
 
 - 得到内核镜像`Image`
-
-- 得到设备树`rk3399-tn3399-v3.dtb` `rk3399-tn3399-v3-with-1024x600-single-8bit-lvds-panel.dtb`，当然也可以直接使用仓库中预编译的设备树
-
 - 使用`make modules_install`得到内核模块
+
+搭配本仓库中的dtb`rk3399-tn3399-v3.dtb` `rk3399-tn3399-v3-with-1024x600-single-8bit-lvds-panel.dtb`使用，也可以自己编译dtb
 
 从设备树的名字可知，使用不同的设备树启动系统分别可以驱动：
 
@@ -109,7 +108,7 @@ sudo apt install linux-headers-current-rockchip64 gcc make
 将仓库中的panel-toshiba-tc358775-2.0.0目录上传到Armbian中，执行：
 
 ```
-make -j6
+make -j`nproc`
 sudo make install
 sudo depmod -a
 ```
@@ -123,13 +122,19 @@ sudo depmod -a
 ```
 # 安装工具
 sudo apt install dkms linux-headers-current-rockchip64 gcc make
-# 将模块纳入DKMS管理，每当内核有变动时，会自动编译安装
+
+# 将驱动纳入DKMS管理
 sudo dkms add panel-toshiba-tc358775/2.0.0
-# 不想等内核变动，立刻安装
-sudo dkms install --no-depmod panel-toshiba-tc358775/2.0.0
+# 安装驱动
+sudo dkms autoinstall panel-toshiba-tc358775/2.0.0
+# 加载驱动
+sudo depmod -a && sudo modprobe panel-toshiba-tc358775
+
+# 如果不再需要可以卸载驱动
+sudo dkms remove panel-toshiba-tc358775/2.0.0 && sudo rm -rf /usr/src/panel-toshiba-tc358775-2.0.0
 ```
 
-如果想在内核启动更早时期就驱动LVDS，可以将模块添加到initramfs，自行Google操作办法
+如果想在内核启动更早时期就驱动LVDS，可以将模块添加到initramfs，对于Armbian，只要在`/etc/initramfs-tools/modules`中添加一行`panel-toshiba-tc358775`，然后执行`update-initramfs -u`即可
 
 # 为其他屏幕适配驱动
 

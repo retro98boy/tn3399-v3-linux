@@ -9,7 +9,7 @@
 下载[源码](https://github.com/ARM-software/arm-trusted-firmware/tags)并解压，编译:
 
 ```
-make CROSS_COMPILE=aarch64-linux-gnu- PLAT=rk3399 -j16
+make CROSS_COMPILE=aarch64-linux-gnu- PLAT=rk3399 -j`nproc`
 ```
 
 编译成功后设置环境变量：
@@ -23,7 +23,7 @@ export BL31=arm-trusted-firmware目录/build/rk3399/release/bl31/bl31.elf
 下载[源码](https://github.com/OP-TEE/optee_os/tags)并解压，编译:
 
 ```
-make PLATFORM=rockchip-rk3399 -j16
+make PLATFORM=rockchip-rk3399 -j`nproc`
 ```
 
 编译成功后设置环境变量：
@@ -37,7 +37,7 @@ export TEE=optee目录/out/arm-plat-rockchip/core/tee.bin
 下载主线U-Boot[源码](https://github.com/u-boot/u-boot/tags)，解压并打上项目中提供的patch，编译：
 
 ```
-make tn3399-v3-rk3399_defconfig && make CROSS_COMPILE=aarch64-linux-gnu- -j32
+make tn3399-v3-rk3399_defconfig && make CROSS_COMPILE=aarch64-linux-gnu- -j`nproc`
 ```
 
 编译成功后，源码目录下出现`idbloader.img` `u-boot.itb`和`u-boot-rockchip.bin`，后者由前面两个镜像根据its合并而来
@@ -58,9 +58,7 @@ dd if=u-boot.itb of=path_to_your_img seek=16384 status=progress oflag=direct con
 
 ## 主线内核
 
-从kernel.org下载主线内核源码并解压，添加仓库提供的dts和TC358775驱动再编译，如何添加可参考仓库中的`linux-6.x.y-add-tn3399-v3.patch`补丁
-
-PS：补丁不会经常更新，目前的补丁会添加2.0.0版本TC358775驱动，如果后续dts和TC358775驱动有更新，请参考补丁自行添加最新版dts和TC358775驱动
+从kernel.org下载主线内核源码并解压，添加仓库提供的dts和TC358775驱动再编译
 
 ## BSP内核
 
