@@ -214,3 +214,9 @@ sudo systemctl stop alsa-restore.service && sudo rm /var/lib/alsa/asound.state &
 [Advanced Linux Sound Architecture](https://wiki.archlinux.org/title/Advanced_Linux_Sound_Architecture)
 
 [ALSA project - the C library reference](https://www.alsa-project.org/alsa-doc/alsa-lib/group__ucm__conf.html)
+
+# 其它固件
+
+[Batocera](https://github.com/retro98boy/batocera.linux)
+
+[OpenWrt](https://github.com/retro98boy/openwrt)
