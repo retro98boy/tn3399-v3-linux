@@ -1,4 +1,4 @@
-下载地址：http://mirrors.ustc.edu.cn/armbian/pool/main/a/armbian-firmware-full/
+下载地址：https://github.com/armbian/firmware/tree/0c5a7e40793d35c2f1209772d68bf04ad769a777
 
 - `fw_bcm43455c0_ag.bin`：WLAN固件
 - `fw_bcm43455c0_ag_apsta.bin`：未知，非必需
